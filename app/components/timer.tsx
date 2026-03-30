@@ -7,6 +7,10 @@ import { TimerProps, TimerStorageState, TimerState } from "../../types/timer";
 import { useTimerStore } from "../../hooks/useTimerStore";
 import { tripleConfirm } from "../../utils/confirmations";
 
+/**
+ * 計時器組件
+ * 顯示單個玩家的計時器，包含進度條、時間顯示和控制按鈕
+ */
 export default function Timer(props: TimerProps) {
   const {
     timer,
@@ -19,8 +23,14 @@ export default function Timer(props: TimerProps) {
     onShowTimeout,
     onHideTimeout,
   } = props;
-  const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
 
+  // 將分鐘轉換為毫秒
+  const MAX_TIME = settings.maxMinutes * 60 * 1000;
+
+  /**
+   * 格式化時間顯示
+   * 轉換毫秒為 MM:SS.CC 格式
+   */
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
@@ -30,11 +40,12 @@ export default function Timer(props: TimerProps) {
       .padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}`;
   };
 
+  // 計算剩餘時間和進度百分比
   const remainingTime = MAX_TIME - timer.time;
   const progressPercentage =
     settings.reverseMode && timer.time > 0
-      ? (timer.time / MAX_TIME) * 100
-      : (timer.time / MAX_TIME) * 100;
+      ? (timer.time / MAX_TIME) * 100 // 反向模式：顯示剩餘時間比例
+      : (timer.time / MAX_TIME) * 100; // 正常模式：顯示已用時間比例
 
   const handleStart = () => {
     if (timer.time < MAX_TIME || (settings.reverseMode && timer.time > 0)) {
