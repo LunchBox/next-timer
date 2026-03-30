@@ -338,16 +338,20 @@ export function useTimerStore(
 
 /**
  * 多計時器管理 Hook
- * 根據指定數量創建對應的計時器實例
- * @param count 計時器數量
+ * 始終創建最大數量的計時器實例，但只返回請求的數量
+ * 這樣可以確保 hooks 調用次數始終一致
+ * @param count 請求的計時器數量
  * @param settings 計時器設定
- * @returns TimerStore 數組
+ * @returns TimerStore 數組（長度為 count）
  */
 export function useTimerStores(
   count: number,
   settings: { reverseMode: boolean; maxMinutes: number },
 ): TimerStore[] {
-  return Array.from({ length: count }, (_, i) =>
+  // 始終創建最大數量的計時器來保持 hooks 調用次數一致
+  const MAX_TIMERS = 20; // 與 SETTING.MAX_PLAYER_COUNT 保持一致
+
+  const allStores = Array.from({ length: MAX_TIMERS }, (_, i) =>
     useTimerStore(
       {
         id: i,
@@ -360,4 +364,7 @@ export function useTimerStores(
       settings,
     ),
   );
+
+  // 只返回請求的數量
+  return allStores.slice(0, count);
 }
