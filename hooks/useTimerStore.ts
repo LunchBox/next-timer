@@ -131,12 +131,16 @@ export function useTimerStore(
   };
 }
 
-// Hook for managing multiple timers
+// Maximum number of timers supported
+const MAX_TIMERS = 20;
+
+// Hook for managing multiple timers - always creates MAX_TIMERS hooks for consistency
 export function useTimerStores(
   count: number,
   settings: { reverseMode: boolean; maxMinutes: number },
 ): TimerStore[] {
-  return Array.from({ length: count }, (_, i) =>
+  // Always create MAX_TIMERS hooks to maintain consistent hook calls
+  const allStores = Array.from({ length: MAX_TIMERS }, (_, i) =>
     useTimerStore(
       {
         id: i,
@@ -149,4 +153,7 @@ export function useTimerStores(
       settings,
     ),
   );
+
+  // Return only the requested number of stores
+  return allStores.slice(0, count);
 }

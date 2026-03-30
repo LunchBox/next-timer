@@ -11,25 +11,114 @@ export interface SettingStore {
   handleToggleReverseMode: () => Promise<void>;
 }
 
+// Helper function to load settings synchronously
+function loadSettingsFromStorage(): SettingState {
+  if (typeof window === "undefined") {
+    return {
+      maxMinutes: SETTING.DEFAULT_MAX_MINUTES,
+      playerCount: SETTING.DEFAULT_PLAYER_COUNT,
+      allowMultiTimer: false,
+      reverseMode: false,
+    };
+  }
+
+  const maxMinutes = (() => {
+    try {
+      const saved = localStorage.getItem(SETTING.STORAGE_KEYS.MAX_MINUTES);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          typeof parsed === "number" &&
+          parsed >= 1 &&
+          parsed <= SETTING.MAX_MINUTES_LIMIT
+        ) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Ignore invalid data
+    }
+    return SETTING.DEFAULT_MAX_MINUTES;
+  })();
+
+  const playerCount = (() => {
+    try {
+      const saved = localStorage.getItem(SETTING.STORAGE_KEYS.PLAYER_COUNT);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          typeof parsed === "number" &&
+          parsed >= 1 &&
+          parsed <= SETTING.MAX_PLAYER_COUNT
+        ) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Ignore invalid data
+    }
+    return SETTING.DEFAULT_PLAYER_COUNT;
+  })();
+
+  const allowMultiTimer = (() => {
+    try {
+      const saved = localStorage.getItem(SETTING.STORAGE_KEYS.ALLOW_MULTI);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed === "boolean") {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Ignore invalid data
+    }
+    return false;
+  })();
+
+  const reverseMode = (() => {
+    try {
+      const saved = localStorage.getItem(SETTING.STORAGE_KEYS.REVERSE_MODE);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed === "boolean") {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Ignore invalid data
+    }
+    return false;
+  })();
+
+  return {
+    maxMinutes,
+    playerCount,
+    allowMultiTimer,
+    reverseMode,
+  };
+}
+
 export function useSettingStore(): SettingStore {
+  // Load settings synchronously for initial render
+  const initialSettings = useMemo(() => loadSettingsFromStorage(), []);
   const [maxMinutes, saveMaxMinutes] = useLocalStorage(
     SETTING.STORAGE_KEYS.MAX_MINUTES,
-    SETTING.DEFAULT_MAX_MINUTES,
+    initialSettings.maxMinutes,
     (v) => typeof v === "number" && v >= 1 && v <= SETTING.MAX_MINUTES_LIMIT,
   );
   const [playerCount, savePlayerCount] = useLocalStorage(
     SETTING.STORAGE_KEYS.PLAYER_COUNT,
-    SETTING.DEFAULT_PLAYER_COUNT,
+    initialSettings.playerCount,
     (v) => typeof v === "number" && v >= 1 && v <= SETTING.MAX_PLAYER_COUNT,
   );
   const [allowMultiTimer, saveAllowMultiTimer] = useLocalStorage(
     SETTING.STORAGE_KEYS.ALLOW_MULTI,
-    false,
+    initialSettings.allowMultiTimer,
     (v) => typeof v === "boolean",
   );
   const [reverseMode, saveReverseMode] = useLocalStorage(
     SETTING.STORAGE_KEYS.REVERSE_MODE,
-    false,
+    initialSettings.reverseMode,
     (v) => typeof v === "boolean",
   );
 

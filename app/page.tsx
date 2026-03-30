@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
@@ -22,8 +22,14 @@ export default function Home() {
     null,
   );
   const [globalPause, setGlobalPause] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Use the timer stores hook to manage all timers
+  // Prevent hydration mismatch by only rendering dynamic content after client-side mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Use the timer stores hook to manage all timers - always call to maintain hook order
   const timerStores = useTimerStores(settings.playerCount, {
     reverseMode: settings.reverseMode,
     maxMinutes: settings.maxMinutes,
@@ -102,16 +108,17 @@ export default function Home() {
           />
         )}
 
-        {/* Timers */}
-        {Array.from({ length: settings.playerCount }, (_, i: number) => (
-          <TimerComponent
-            key={timerStores[i].timer.id}
-            timer={timerStores[i].timer}
-            settings={settings}
-            activeTimerDialog={activeTimerDialog}
-            onSetActiveTimerDialog={setActiveTimerDialog}
-          />
-        ))}
+        {/* Timers - only render on client to prevent hydration mismatch */}
+        {isClient &&
+          Array.from({ length: settings.playerCount }, (_, i: number) => (
+            <TimerComponent
+              key={timerStores[i].timer.id}
+              timer={timerStores[i].timer}
+              settings={settings}
+              activeTimerDialog={activeTimerDialog}
+              onSetActiveTimerDialog={setActiveTimerDialog}
+            />
+          ))}
       </main>
     </div>
   );
