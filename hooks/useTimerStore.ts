@@ -179,11 +179,11 @@ export function useTimerStore(
       return;
     }
 
-    // Update timer time
-    setTimer((prev) => ({ ...prev, time: newTime }));
-
-    // Continue animation loop only if still running
+    // Update timer time only if still running (prevent updates after pause)
     if (startTimeRef.current !== null) {
+      setTimer((prev) => ({ ...prev, time: newTime }));
+
+      // Continue animation loop only if still running
       animationFrameRef.current = requestAnimationFrame(updateTimerLoop);
     }
   }, [settings.reverseMode, MAX_TIME]);
@@ -235,6 +235,12 @@ export function useTimerStore(
   }, []);
 
   const pauseTimer = useCallback(() => {
+    // Immediately update timing refs to prevent any further updates
+    if (startTimeRef.current !== null) {
+      pausedTimeRef.current += performance.now() - startTimeRef.current;
+      startTimeRef.current = null;
+    }
+
     setTimer((prev) => ({ ...prev, isRunning: false }));
   }, []);
 

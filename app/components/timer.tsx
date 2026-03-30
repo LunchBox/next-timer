@@ -89,8 +89,8 @@ export default function Timer(props: TimerProps) {
   return (
     <div className="flex w-full items-center gap-4 p-2 border-b">
       <div className="w-16 text-sm font-medium">Player {timer.id + 1}</div>
-      <div className="flex-1">
-        <div className="w-full bg-gray-200  h-3 mb-1 shadow-inner">
+      <div className="flex-1 min-w-0">
+        <div className="w-36 bg-gray-200 h-3 mb-1 shadow-inner">
           <div
             className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 h-3 shadow-lg"
             style={{ width: `${progressPercentage}%` }}
