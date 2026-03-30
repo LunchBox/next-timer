@@ -15,7 +15,9 @@ export default function Timer({
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const pausedTimeRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -25,6 +27,10 @@ export default function Timer({
         const parsed = JSON.parse(saved);
         setTime(parsed.time || 0);
         setIsRunning(parsed.isRunning || false);
+        if (parsed.isRunning && parsed.startTime) {
+          startTimeRef.current = parsed.startTime;
+          pausedTimeRef.current = parsed.pausedTime || 0;
+        }
       } catch (e) {
         // Ignore invalid data
       }
@@ -35,7 +41,13 @@ export default function Timer({
   // Save state to localStorage whenever it changes (only after initial load)
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem(storageKey, JSON.stringify({ time, isRunning }));
+      const stateToSave = {
+        time,
+        isRunning,
+        startTime: startTimeRef.current,
+        pausedTime: pausedTimeRef.current,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(stateToSave));
     }
   }, [time, isRunning, storageKey, isLoaded]);
 
@@ -44,34 +56,53 @@ export default function Timer({
     if (resetSignal && resetSignal > 0) {
       setIsRunning(false);
       setTime(0);
+      startTimeRef.current = null;
+      pausedTimeRef.current = 0;
     }
   }, [resetSignal]);
 
+  // Animation frame for smooth updates
+  const updateTimer = () => {
+    if (isRunning && startTimeRef.current) {
+      const now = performance.now();
+      const elapsed = now - startTimeRef.current + pausedTimeRef.current;
+      const newTime = Math.min(elapsed, MAX_TIME);
+
+      setTime(newTime);
+
+      if (newTime >= MAX_TIME) {
+        setIsRunning(false);
+        startTimeRef.current = null;
+        pausedTimeRef.current = 0;
+      } else {
+        animationFrameRef.current = requestAnimationFrame(updateTimer);
+      }
+    }
+  };
+
   useEffect(() => {
-    if (isRunning && time < MAX_TIME) {
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime: number) => {
-          const newTime = prevTime + 10;
-          if (newTime >= MAX_TIME) {
-            setIsRunning(false);
-            return MAX_TIME;
-          }
-          return newTime;
-        });
-      }, 10);
+    if (isRunning) {
+      if (!startTimeRef.current) {
+        startTimeRef.current = performance.now();
+      }
+      animationFrameRef.current = requestAnimationFrame(updateTimer);
     } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      if (startTimeRef.current) {
+        pausedTimeRef.current += performance.now() - startTimeRef.current;
+        startTimeRef.current = null;
       }
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isRunning, time]);
+  }, [isRunning]);
 
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
