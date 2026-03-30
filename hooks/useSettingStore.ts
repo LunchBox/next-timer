@@ -122,6 +122,17 @@ export function useSettingStore(): SettingStore {
     (v) => typeof v === "boolean",
   );
 
+  // Prevent settings from changing after initial load to avoid recreating timer stores
+  const stableSettings = useMemo(
+    () => ({
+      maxMinutes,
+      playerCount,
+      allowMultiTimer,
+      reverseMode,
+    }),
+    [],
+  ); // Empty dependency array - only use initial values
+
   // Memoized settings object to prevent unnecessary re-renders
   const settings: SettingState = useMemo(
     () => ({

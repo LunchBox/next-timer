@@ -22,9 +22,6 @@ export function useTimerStore(
   const storageKey = `timer-${initialTimer.id}`;
   const MAX_TIME = settings.maxMinutes * 60 * 1000;
 
-  const [storageState, setStorageState] =
-    useLocalStorage<TimerStorageState | null>(storageKey, null);
-
   // Load initial state from localStorage synchronously
   const getInitialTimerState = (): TimerState => {
     try {
@@ -65,7 +62,7 @@ export function useTimerStore(
   const pausedTimeRef = useRef(0);
   const initialTimeRef = useRef(0); // Store the time when timer started
 
-  // Save to localStorage whenever state changes (only after initial load)
+  // Save to localStorage synchronously whenever state changes (only after initial load)
   useEffect(() => {
     if (timer.isLoaded) {
       const stateToSave: TimerStorageState = {
@@ -75,9 +72,14 @@ export function useTimerStore(
         pausedTime: pausedTimeRef.current,
         reverseMode: settings.reverseMode,
       };
-      setStorageState(stateToSave);
+      // Save synchronously to localStorage
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
     }
-  }, [timer, settings.reverseMode]); // Removed setStorageState as it should be stable
+  }, [timer, settings.reverseMode, storageKey]); // Added storageKey to deps
 
   // Reset paused time when reverse mode changes to prevent calculation errors
   useEffect(() => {
@@ -159,7 +161,11 @@ export function useTimerStore(
 
   const resetTimer = () => {
     // Clear localStorage when resetting
-    setStorageState(null);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      // Ignore localStorage errors
+    }
     setTimer((prev) => ({
       ...prev,
       isRunning: false,

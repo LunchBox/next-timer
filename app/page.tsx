@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
@@ -17,6 +17,15 @@ export default function Home() {
     handleToggleReverseMode,
   } = useSettingStore();
 
+  // Use stable settings for timer stores to prevent recreation
+  const stableTimerSettings = useMemo(
+    () => ({
+      reverseMode: settings.reverseMode,
+      maxMinutes: settings.maxMinutes,
+    }),
+    [],
+  ); // Empty deps - use initial values
+
   const [showSettings, setShowSettings] = useState(false);
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
     null,
@@ -29,11 +38,9 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
-  // Use the timer stores hook to manage all timers - always call to maintain hook order
-  const timerStores = useTimerStores(settings.playerCount, {
-    reverseMode: settings.reverseMode,
-    maxMinutes: settings.maxMinutes,
-  });
+  // Use the timer stores hook to manage all timers - use stable settings to prevent recreation
+  const stablePlayerCount = useMemo(() => settings.playerCount, []); // Use initial value
+  const timerStores = useTimerStores(stablePlayerCount, stableTimerSettings);
 
   const handleGlobalPause = () => {
     const newGlobalPause = !globalPause;
