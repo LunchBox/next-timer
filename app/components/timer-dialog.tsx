@@ -9,6 +9,7 @@ interface TimerDialogProps {
   onTimeOut?: () => void;
   isReverseMode?: boolean;
   showTimeOut?: boolean;
+  isNormalModeComplete?: boolean;
 }
 
 export default function TimerDialog({
@@ -19,6 +20,7 @@ export default function TimerDialog({
   onTimeOut,
   isReverseMode = false,
   showTimeOut = false,
+  isNormalModeComplete = false,
 }: TimerDialogProps) {
   // Check for timeout when time reaches 0 in reverse mode
   useEffect(() => {
@@ -43,7 +45,9 @@ export default function TimerDialog({
             <h2 className="text-2xl font-bold mb-4 text-red-600">TIME OUT!</h2>
             <div className="text-4xl font-bold mb-2">Player {playerNumber}</div>
             <div className="text-lg text-gray-600 mb-4">
-              Countdown completed
+              {isNormalModeComplete
+                ? "Time limit reached"
+                : "Countdown completed"}
             </div>
           </div>
         ) : (

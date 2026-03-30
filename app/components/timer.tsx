@@ -27,6 +27,7 @@ export default function Timer({
   const [isRunning, setIsRunning] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showTimeOut, setShowTimeOut] = useState(false);
+  const [isNormalModeComplete, setIsNormalModeComplete] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -103,9 +104,12 @@ export default function Timer({
         (reverseMode && newTime <= 0) ||
         (!reverseMode && newTime >= MAX_TIME)
       ) {
-        // Show timeout alert for reverse mode countdown
-        if (reverseMode && newTime <= 0) {
-          handleTimeOut();
+        // Show timeout for both normal mode completion and reverse mode countdown
+        if (
+          (reverseMode && newTime <= 0) ||
+          (!reverseMode && newTime >= MAX_TIME)
+        ) {
+          handleTimeOut(!reverseMode && newTime >= MAX_TIME);
         }
         setIsRunning(false);
         startTimeRef.current = null;
@@ -203,8 +207,9 @@ export default function Timer({
     onSetActiveTimerDialog(null);
   };
 
-  const handleTimeOut = () => {
+  const handleTimeOut = (isNormalModeComplete = false) => {
     setShowTimeOut(true);
+    setIsNormalModeComplete(isNormalModeComplete);
     setIsRunning(false);
   };
 
@@ -267,6 +272,7 @@ export default function Timer({
           onTimeOut={handleTimeOut}
           isReverseMode={reverseMode}
           showTimeOut={showTimeOut}
+          isNormalModeComplete={isNormalModeComplete}
         />
       )}
     </div>
