@@ -22,8 +22,12 @@ export function useTimerStore(
   const storageKey = `timer-${initialTimer.id}`;
   const MAX_TIME = settings.maxMinutes * 60 * 1000;
 
-  // Load initial state from localStorage synchronously
+  // Load initial state from localStorage synchronously (only on client)
   const getInitialTimerState = (): TimerState => {
+    if (typeof window === "undefined") {
+      // On server side, return default state without loading from localStorage
+      return { ...initialTimer, isLoaded: false };
+    }
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
@@ -61,6 +65,46 @@ export function useTimerStore(
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const initialTimeRef = useRef(0); // Store the time when timer started
+
+  // Load from localStorage on client mount if not already loaded
+  useEffect(() => {
+    if (typeof window !== "undefined" && !timer.isLoaded) {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const storageState: TimerStorageState = JSON.parse(saved);
+          if (storageState.isRunning && storageState.startTime) {
+            const savedReverseMode = storageState.reverseMode || false;
+            if (!savedReverseMode) {
+              // For normal mode, simulate start time to maintain correct timing after refresh
+              startTimeRef.current = performance.now() - storageState.time;
+              pausedTimeRef.current = 0;
+              initialTimeRef.current = 0; // Normal mode always starts from 0
+            } else {
+              startTimeRef.current = storageState.startTime;
+              pausedTimeRef.current = storageState.pausedTime || 0;
+              initialTimeRef.current = storageState.time; // Reverse mode starts from saved time
+            }
+          } else {
+            // Timer is not running, set initial time for future starts
+            initialTimeRef.current = storageState.time || 0;
+          }
+          setTimer({
+            ...initialTimer,
+            time: storageState.time || 0,
+            isRunning: storageState.isRunning || false,
+            isLoaded: true,
+          });
+        } else {
+          // No saved data, mark as loaded with defaults
+          setTimer((prev) => ({ ...prev, isLoaded: true }));
+        }
+      } catch (e) {
+        // Invalid data, mark as loaded with defaults
+        setTimer((prev) => ({ ...prev, isLoaded: true }));
+      }
+    }
+  }, [storageKey, initialTimer, timer.isLoaded]);
 
   // Save to localStorage synchronously whenever state changes (only after initial load)
   useEffect(() => {
