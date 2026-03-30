@@ -14,13 +14,9 @@ export default function Timer(props: TimerProps) {
     onSetActiveTimerDialog,
   } = props;
   const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
-  const animationFrameRef = useRef<number | null>(null);
 
   const {
     timer,
-    startTimeRef,
-    pausedTimeRef,
-    updateTimer: storeUpdateTimer,
     startTimer: storeStartTimer,
     pauseTimer: storePauseTimer,
     resetTimer: storeResetTimer,
@@ -30,69 +26,6 @@ export default function Timer(props: TimerProps) {
     reverseMode: settings.reverseMode,
     maxMinutes: settings.maxMinutes,
   });
-
-  // Animation frame for smooth updates
-  const updateTimerAnimation = () => {
-    if (timer.isRunning && startTimeRef.current) {
-      const now = performance.now();
-      const elapsed = now - startTimeRef.current + pausedTimeRef.current;
-
-      let newTime: number;
-      if (settings.reverseMode && timer.time > 0) {
-        // Reverse mode: countdown from current time to 0
-        // For countdown, we don't use pausedTimeRef to avoid calculation errors
-        const countdownElapsed = now - startTimeRef.current;
-        newTime = Math.max(timer.time - countdownElapsed, 0);
-      } else {
-        // Normal mode: count up from 0 to MAX_TIME
-        newTime = Math.min(elapsed, MAX_TIME);
-      }
-
-      storeUpdateTimer(newTime);
-
-      if (
-        (settings.reverseMode && newTime <= 0) ||
-        (!settings.reverseMode && newTime >= MAX_TIME)
-      ) {
-        // Show timeout for both normal mode completion and reverse mode countdown
-        if (
-          (settings.reverseMode && newTime <= 0) ||
-          (!settings.reverseMode && newTime >= MAX_TIME)
-        ) {
-          showTimeout(!settings.reverseMode && newTime >= MAX_TIME);
-        }
-        storePauseTimer();
-        startTimeRef.current = null;
-        pausedTimeRef.current = 0;
-      } else {
-        animationFrameRef.current = requestAnimationFrame(updateTimerAnimation);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (timer.isRunning) {
-      if (!startTimeRef.current) {
-        startTimeRef.current = performance.now();
-      }
-      animationFrameRef.current = requestAnimationFrame(updateTimerAnimation);
-    } else {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      if (startTimeRef.current) {
-        pausedTimeRef.current += performance.now() - startTimeRef.current;
-        startTimeRef.current = null;
-      }
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [timer.isRunning, timer.id]);
 
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
@@ -172,7 +105,7 @@ export default function Timer(props: TimerProps) {
       <div className="flex-1">
         <div className="w-full bg-gray-200  h-3 mb-1 shadow-inner">
           <div
-            className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 h-3 transition-all duration-300 ease-out shadow-lg animate-pulse"
+            className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 h-3 shadow-lg"
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
