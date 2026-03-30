@@ -12,7 +12,6 @@ export default function Timer(props: TimerProps) {
     settings,
     activeTimerDialog,
     onSetActiveTimerDialog,
-    onUpdateTimers,
   } = props;
   const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
   const animationFrameRef = useRef<number | null>(null);

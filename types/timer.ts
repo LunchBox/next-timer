@@ -28,5 +28,4 @@ export interface TimerProps {
   settings: SettingsState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
-  onUpdateTimers: (updateFn: (timers: TimerState[]) => TimerState[]) => void;
 }

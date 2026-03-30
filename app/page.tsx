@@ -12,8 +12,7 @@ import {
   createDefaultTimer,
   resetTimer,
   setTimerLoaded,
-  startTimer,
-  pauseTimer,
+  updateTimerInArray,
 } from "./models/timer";
 
 export default function Home() {
@@ -124,14 +123,13 @@ export default function Home() {
     }
 
     // Reset all timers using model functions
-    setTimers((prev) => {
-      let updatedTimers = [...prev];
-      for (let i = 0; i < prev.length; i++) {
-        updatedTimers = resetTimer(updatedTimers, i);
-        updatedTimers = setTimerLoaded(updatedTimers, i);
-      }
-      return updatedTimers;
-    });
+    setTimers((prev) =>
+      prev.map(
+        (timer) =>
+          updateTimerInArray([timer], timer.id, resetTimer)[0] &&
+          updateTimerInArray([timer], timer.id, setTimerLoaded)[0],
+      ),
+    );
   };
 
   const handleSetMaxMinutes = (minutes: number) => {
@@ -143,14 +141,13 @@ export default function Home() {
     }
 
     // Reset all timers using model functions
-    setTimers((prev) => {
-      let updatedTimers = [...prev];
-      for (let i = 0; i < prev.length; i++) {
-        updatedTimers = resetTimer(updatedTimers, i);
-        updatedTimers = setTimerLoaded(updatedTimers, i);
-      }
-      return updatedTimers;
-    });
+    setTimers((prev) =>
+      prev.map(
+        (timer) =>
+          updateTimerInArray([timer], timer.id, resetTimer)[0] &&
+          updateTimerInArray([timer], timer.id, setTimerLoaded)[0],
+      ),
+    );
   };
 
   const handleSetPlayerCount = (count: number) => {
@@ -162,14 +159,13 @@ export default function Home() {
     }
 
     // Reset all timers using model functions
-    setTimers((prev) => {
-      let updatedTimers = [...prev];
-      for (let i = 0; i < prev.length; i++) {
-        updatedTimers = resetTimer(updatedTimers, i);
-        updatedTimers = setTimerLoaded(updatedTimers, i);
-      }
-      return updatedTimers;
-    });
+    setTimers((prev) =>
+      prev.map(
+        (timer) =>
+          updateTimerInArray([timer], timer.id, resetTimer)[0] &&
+          updateTimerInArray([timer], timer.id, setTimerLoaded)[0],
+      ),
+    );
   };
 
   const handleSetAllowMultiTimer = (allow: boolean) => {
@@ -245,7 +241,6 @@ export default function Home() {
             settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
-            onUpdateTimers={setTimers}
           />
         ))}
       </main>

@@ -12,34 +12,22 @@ export function createDefaultTimer(): TimerState {
 }
 
 export function updateTimerState(
-  timers: TimerState[],
-  timerId: number,
+  timer: TimerState,
   updates: Partial<TimerState>,
-): TimerState[] {
-  return timers.map((timer) =>
-    timer.id === timerId ? { ...timer, ...updates } : timer,
-  );
+): TimerState {
+  return { ...timer, ...updates };
 }
 
-export function startTimer(
-  timers: TimerState[],
-  timerId: number,
-): TimerState[] {
-  return updateTimerState(timers, timerId, { isRunning: true });
+export function startTimer(timer: TimerState): TimerState {
+  return updateTimerState(timer, { isRunning: true });
 }
 
-export function pauseTimer(
-  timers: TimerState[],
-  timerId: number,
-): TimerState[] {
-  return updateTimerState(timers, timerId, { isRunning: false });
+export function pauseTimer(timer: TimerState): TimerState {
+  return updateTimerState(timer, { isRunning: false });
 }
 
-export function resetTimer(
-  timers: TimerState[],
-  timerId: number,
-): TimerState[] {
-  return updateTimerState(timers, timerId, {
+export function resetTimer(timer: TimerState): TimerState {
+  return updateTimerState(timer, {
     isRunning: false,
     time: 0,
     showTimeOut: false,
@@ -47,38 +35,38 @@ export function resetTimer(
   });
 }
 
-export function setTimerTime(
-  timers: TimerState[],
-  timerId: number,
-  time: number,
-): TimerState[] {
-  return updateTimerState(timers, timerId, { time });
+export function setTimerTime(timer: TimerState, time: number): TimerState {
+  return updateTimerState(timer, { time });
 }
 
 export function showTimerTimeout(
-  timers: TimerState[],
-  timerId: number,
+  timer: TimerState,
   isNormalModeComplete = false,
-): TimerState[] {
-  return updateTimerState(timers, timerId, {
+): TimerState {
+  return updateTimerState(timer, {
     showTimeOut: true,
     isNormalModeComplete,
     isRunning: false,
   });
 }
 
-export function hideTimerTimeout(
-  timers: TimerState[],
-  timerId: number,
-): TimerState[] {
-  return updateTimerState(timers, timerId, {
+export function hideTimerTimeout(timer: TimerState): TimerState {
+  return updateTimerState(timer, {
     showTimeOut: false,
   });
 }
 
-export function setTimerLoaded(
+export function setTimerLoaded(timer: TimerState): TimerState {
+  return updateTimerState(timer, { isLoaded: true });
+}
+
+// Utility function to update a timer in an array
+export function updateTimerInArray(
   timers: TimerState[],
   timerId: number,
+  updateFn: (timer: TimerState) => TimerState,
 ): TimerState[] {
-  return updateTimerState(timers, timerId, { isLoaded: true });
+  return timers.map((timer) =>
+    timer.id === timerId ? updateFn(timer) : timer,
+  );
 }
