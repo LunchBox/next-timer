@@ -6,7 +6,7 @@ export interface TimerStorageState {
   reverseMode: boolean;
 }
 
-export interface TimerComponentState {
+export interface TimerState {
   time: number;
   isRunning: boolean;
   isLoaded: boolean;
@@ -16,10 +16,12 @@ export interface TimerComponentState {
 
 export interface TimerProps {
   cIdx: number;
+  timerState: TimerState;
   resetSignal?: number;
   maxMinutes: number;
   allowMultiTimer: boolean;
   reverseMode: boolean;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
+  onUpdateTimerState: (cIdx: number, updates: Partial<TimerState>) => void;
 }

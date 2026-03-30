@@ -7,6 +7,7 @@ import TimerSettings from "./components/timer-settings";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { tripleConfirm } from "../utils/confirmations";
 import { TIMER_CONFIG } from "../config/timer";
+import { TimerState } from "../types/timer";
 
 export default function Home() {
   const [resetSignal, setResetSignal] = useState(0);
@@ -36,6 +37,56 @@ export default function Home() {
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
     null,
   );
+  const [globalPause, setGlobalPause] = useState(false);
+
+  // Initialize timer states
+  const [timers, setTimers] = useState<TimerState[]>(() =>
+    Array.from({ length: playerCount }, () => ({
+      time: 0,
+      isRunning: false,
+      isLoaded: false,
+      showTimeOut: false,
+      isNormalModeComplete: false,
+    })),
+  );
+
+  // Update timer state when playerCount changes
+  useState(() => {
+    setTimers((prev) => {
+      const newTimers = [...prev];
+      while (newTimers.length < playerCount) {
+        newTimers.push({
+          time: 0,
+          isRunning: false,
+          isLoaded: false,
+          showTimeOut: false,
+          isNormalModeComplete: false,
+        });
+      }
+      return newTimers.slice(0, playerCount);
+    });
+  });
+
+  const onUpdateTimerState = (cIdx: number, updates: Partial<TimerState>) => {
+    setTimers((prev) =>
+      prev.map((timer, index) =>
+        index === cIdx ? { ...timer, ...updates } : timer,
+      ),
+    );
+  };
+
+  const handleGlobalPause = () => {
+    const newGlobalPause = !globalPause;
+    setGlobalPause(newGlobalPause);
+
+    // Pause or resume all timers based on global pause state
+    setTimers((prev) =>
+      prev.map((timer) => ({
+        ...timer,
+        isRunning: newGlobalPause ? false : timer.isRunning,
+      })),
+    );
+  };
 
   const handleResetAll = async () => {
     const confirmed = await tripleConfirm([
@@ -113,6 +164,9 @@ export default function Home() {
           >
             {showSettings ? "Hide Settings" : "Show Settings"}
           </Button>
+          <Button onClick={handleGlobalPause} variant="secondary" size="sm">
+            {globalPause ? "Resume All" : "Pause All"}
+          </Button>
           <Button onClick={handleResetAll} variant="danger" size="sm">
             Reset All Timers
           </Button>
@@ -140,14 +194,16 @@ export default function Home() {
         {/* Timers */}
         {Array.from({ length: playerCount }, (_, i: number) => (
           <Timer
-            cIdx={i}
             key={i}
+            cIdx={i}
+            timerState={timers[i]}
             resetSignal={resetSignal}
             maxMinutes={maxMinutes}
             allowMultiTimer={allowMultiTimer}
             reverseMode={reverseMode}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
+            onUpdateTimerState={onUpdateTimerState}
           />
         ))}
       </main>

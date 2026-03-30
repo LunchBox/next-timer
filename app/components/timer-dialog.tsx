@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import Button from "./button";
-import { TimerComponentState } from "../../types/timer";
+import { TimerState } from "../../types/timer";
 
 interface TimerDialogProps {
   playerNumber: number;
-  componentState: TimerComponentState;
+  componentState: TimerState;
   remainingTime: number;
   onClose: () => void;
   onTimeOut?: () => void;
