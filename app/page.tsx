@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Timer from "./components/timer";
+import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { tripleConfirm } from "../utils/confirmations";
 import { TIMER_CONFIG } from "../config/timer";
-import { TimerState, TimerSettingsState } from "../types/timer";
+import { TimerState, SettingsState } from "../types/timer";
 
 export default function Home() {
   const [maxMinutes, saveMaxMinutes] = useLocalStorage(
@@ -39,16 +39,17 @@ export default function Home() {
   const [globalPause, setGlobalPause] = useState(false);
 
   // Global settings state
-  const settings: TimerSettingsState = {
+  const settings: SettingsState = {
     maxMinutes,
     playerCount,
     allowMultiTimer,
     reverseMode,
   };
 
-  // Initialize timer states
+  // Initialize timers
   const [timers, setTimers] = useState<TimerState[]>(() =>
-    Array.from({ length: playerCount }, () => ({
+    Array.from({ length: playerCount }, (_, i) => ({
+      id: i,
       time: 0,
       isRunning: false,
       isLoaded: false,
@@ -57,12 +58,13 @@ export default function Home() {
     })),
   );
 
-  // Update timer state when playerCount changes
+  // Update timers when playerCount changes
   useState(() => {
     setTimers((prev) => {
       const newTimers = [...prev];
       while (newTimers.length < playerCount) {
         newTimers.push({
+          id: newTimers.length,
           time: 0,
           isRunning: false,
           isLoaded: false,
@@ -74,13 +76,18 @@ export default function Home() {
     });
   });
 
-  const onUpdateTimerState = (cIdx: number, updates: Partial<TimerState>) => {
-    setTimers((prev) =>
-      prev.map((timer, index) =>
-        index === cIdx ? { ...timer, ...updates } : timer,
-      ),
-    );
-  };
+  // const onUpdateTimerState = (
+  //   timerId: number,
+  //   updates: Partial<TimerState>,
+  // ) => {
+  //   setTimers((prev) =>
+  //     prev.map((timer) =>
+  //       timer.id === timerId
+  //         ? { ...timer, state: { ...timer.state, ...updates } }
+  //         : timer,
+  //     ),
+  //   );
+  // };
 
   const handleGlobalPause = () => {
     const newGlobalPause = !globalPause;
@@ -111,12 +118,15 @@ export default function Home() {
 
     // Reset all timers directly
     setTimers((prev) =>
-      prev.map(() => ({
-        time: 0,
-        isRunning: false,
-        isLoaded: true,
-        showTimeOut: false,
-        isNormalModeComplete: false,
+      prev.map((timer) => ({
+        ...timer,
+        state: {
+          time: 0,
+          isRunning: false,
+          isLoaded: true,
+          showTimeOut: false,
+          isNormalModeComplete: false,
+        },
       })),
     );
   };
@@ -131,12 +141,15 @@ export default function Home() {
 
     // Reset all timers
     setTimers((prev) =>
-      prev.map(() => ({
-        time: 0,
-        isRunning: false,
-        isLoaded: true,
-        showTimeOut: false,
-        isNormalModeComplete: false,
+      prev.map((timer) => ({
+        ...timer,
+        state: {
+          time: 0,
+          isRunning: false,
+          isLoaded: true,
+          showTimeOut: false,
+          isNormalModeComplete: false,
+        },
       })),
     );
   };
@@ -151,12 +164,15 @@ export default function Home() {
 
     // Reset all timers
     setTimers((prev) =>
-      prev.map(() => ({
-        time: 0,
-        isRunning: false,
-        isLoaded: true,
-        showTimeOut: false,
-        isNormalModeComplete: false,
+      prev.map((timer) => ({
+        ...timer,
+        state: {
+          time: 0,
+          isRunning: false,
+          isLoaded: true,
+          showTimeOut: false,
+          isNormalModeComplete: false,
+        },
       })),
     );
   };
@@ -228,14 +244,12 @@ export default function Home() {
 
         {/* Timers */}
         {Array.from({ length: playerCount }, (_, i: number) => (
-          <Timer
-            key={i}
-            cIdx={i}
-            timerState={timers[i]}
+          <TimerComponent
+            key={timers[i].id}
+            timer={timers[i]}
             settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
-            onUpdateTimerState={onUpdateTimerState}
           />
         ))}
       </main>

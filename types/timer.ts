@@ -6,7 +6,9 @@ export interface TimerStorageState {
   reverseMode: boolean;
 }
 
+// state of each player's timer
 export interface TimerState {
+  id: number;
   time: number;
   isRunning: boolean;
   isLoaded: boolean;
@@ -14,7 +16,7 @@ export interface TimerState {
   isNormalModeComplete: boolean;
 }
 
-export interface TimerSettingsState {
+export interface SettingsState {
   maxMinutes: number;
   playerCount: number;
   allowMultiTimer: boolean;
@@ -22,10 +24,9 @@ export interface TimerSettingsState {
 }
 
 export interface TimerProps {
-  cIdx: number;
-  timerState: TimerState;
-  settings: TimerSettingsState;
+  timer: TimerState;
+  settings: SettingsState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
-  onUpdateTimerState: (cIdx: number, updates: Partial<TimerState>) => void;
+  // onUpdateTimerState: (timerId: number, updates: Partial<TimerState>) => void;
 }
