@@ -127,6 +127,14 @@ export default function Timer({
 
   const handleStart = () => {
     if (time < MAX_TIME) {
+      const confirmMessage =
+        time === 0
+          ? `Are you sure you want to start Player ${cIdx + 1}'s timer?`
+          : `Are you sure you want to continue Player ${cIdx + 1}'s timer?`;
+
+      const confirmed = window.confirm(confirmMessage);
+      if (!confirmed) return;
+
       if (!allowMultiTimer) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(cIdx);
