@@ -48,16 +48,18 @@ export default function Home() {
   );
 
   const handleResetAll = () => {
-    const firstConfirm = window.confirm("確定要重置所有計時器嗎？");
+    const firstConfirm = window.confirm(
+      "Are you sure you want to reset all timers?",
+    );
     if (!firstConfirm) return;
 
     const secondConfirm = window.confirm(
-      "再次確認：這將清除所有選手的時間記錄！",
+      "Confirm again: This will clear all player time records!",
     );
     if (!secondConfirm) return;
 
     const thirdConfirm = window.confirm(
-      "最後確認：重置後所有數據將無法恢復，確定執行嗎？",
+      "Final confirmation: Data cannot be recovered after reset, proceed?",
     );
     if (!thirdConfirm) return;
 
@@ -74,7 +76,7 @@ export default function Home() {
     e.preventDefault();
     const minutes = parseInt(inputMinutes);
     if (isNaN(minutes) || minutes <= 0 || minutes > 60) {
-      alert("請輸入 1-60 分鐘的有效數字");
+      alert("Please enter a valid number of minutes (1-60)");
       return;
     }
 
@@ -97,7 +99,7 @@ export default function Home() {
     e.preventDefault();
     const count = parseInt(inputPlayerCount);
     if (isNaN(count) || count < 1 || count > 20) {
-      alert("請輸入 1-20 選手的有效數字");
+      alert("Please enter a valid number of players (1-20)");
       return;
     }
 
@@ -118,12 +120,12 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-16 px-16 bg-white dark:bg-black sm:items-start">
-        <h1 className="text-2xl font-bold mb-6">Just another Timer</h1>
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-8 px-16 bg-white dark:bg-black sm:items-start">
+        <h1 className="text-2xl mb-6">Just another Timer</h1>
 
         {/* Settings Form */}
         <div className="w-full mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-          <h2 className="text-lg font-semibold mb-3">計時器設置</h2>
+          <h2 className="text-lg font-semibold mb-3">Timer Settings</h2>
 
           {/* Minutes Setting */}
           <form
@@ -131,7 +133,7 @@ export default function Home() {
             className="flex items-center gap-4 mb-3"
           >
             <label htmlFor="maxMinutes" className="text-sm font-medium">
-              最大分鐘數:
+              Maximum Minutes:
             </label>
             <input
               id="maxMinutes"
@@ -143,9 +145,9 @@ export default function Home() {
               className="px-3 py-1 border rounded text-sm w-20"
               placeholder="15"
             />
-            <span className="text-sm text-gray-600">分鐘 (1-60)</span>
+            <span className="text-sm text-gray-600">minutes (1-60)</span>
             <Button type="submit" variant="primary" size="sm">
-              設置分鐘數
+              Set Minutes
             </Button>
           </form>
 
@@ -155,7 +157,7 @@ export default function Home() {
             className="flex items-center gap-4"
           >
             <label htmlFor="playerCount" className="text-sm font-medium">
-              選手數量:
+              Player Count:
             </label>
             <input
               id="playerCount"
@@ -167,22 +169,22 @@ export default function Home() {
               className="px-3 py-1 border rounded text-sm w-20"
               placeholder="10"
             />
-            <span className="text-sm text-gray-600">人 (1-20)</span>
+            <span className="text-sm text-gray-600">players (1-20)</span>
             <Button type="submit" variant="primary" size="sm">
-              設置選手數
+              Set Players
             </Button>
           </form>
 
           <p className="text-xs text-gray-500 mt-2">
-            當前設置: {maxMinutes} 分鐘, {playerCount} 位選手 -
-            設置新參數將重置所有計時器
+            Current settings: {maxMinutes} minutes, {playerCount} players -
+            Setting new parameters will reset all timers
           </p>
         </div>
 
         {/* Reset All Button */}
         <div className="w-full mb-4">
           <Button onClick={handleResetAll} variant="danger" size="md">
-            重置所有計時器
+            Reset All Timers
           </Button>
         </div>
 

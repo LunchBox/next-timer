@@ -129,14 +129,18 @@ export default function Timer({
   };
 
   const handleReset = () => {
-    const firstConfirm = window.confirm("確定要重置計時器嗎？");
+    const firstConfirm = window.confirm(
+      "Are you sure you want to reset this timer?",
+    );
     if (!firstConfirm) return;
 
-    const secondConfirm = window.confirm("再次確認：這將清除所有時間記錄！");
+    const secondConfirm = window.confirm(
+      "Confirm again: This will clear all time records!",
+    );
     if (!secondConfirm) return;
 
     const thirdConfirm = window.confirm(
-      "最後確認：重置後無法恢復，確定執行嗎？",
+      "Final confirmation: Data cannot be recovered after reset, proceed?",
     );
     if (!thirdConfirm) return;
 
@@ -146,7 +150,7 @@ export default function Timer({
 
   return (
     <div className="flex w-full items-center gap-4 p-2 border-b">
-      <div className="w-16 text-sm font-medium">選手 {cIdx + 1}</div>
+      <div className="w-16 text-sm font-medium">Player {cIdx + 1}</div>
       <div className="flex-1">
         <div className="w-full bg-gray-200  h-3 mb-1 shadow-inner">
           <div
@@ -156,9 +160,9 @@ export default function Timer({
         </div>
       </div>
       <div className="w-32 text-center font-mono text-sm">
-        <div className="text-xs text-gray-500">已用: {formatTime(time)}</div>
-        <div className="text-xs text-red-600">
-          剩餘: {formatTime(remainingTime)}
+        <div className="text-xs text-gray-500">Used: {formatTime(time)}</div>
+        <div className="text-xs text-red-600 whitespace-nowrap">
+          Remain: {formatTime(remainingTime)}
         </div>
       </div>
       <div className="flex gap-1">
@@ -169,15 +173,15 @@ export default function Timer({
             variant="ghost"
             size="sm"
           >
-            {time === 0 ? "開始" : "繼續"}
+            {time === 0 ? "Start" : "Continue"}
           </Button>
         ) : (
           <Button onClick={handlePause} variant="secondary" size="sm">
-            暫停
+            Pause
           </Button>
         )}
         <Button onClick={handleReset} variant="ghost" size="sm">
-          重置
+          Reset
         </Button>
       </div>
     </div>
