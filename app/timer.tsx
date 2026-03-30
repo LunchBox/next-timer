@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Button from "./button";
+import TimerDialog from "./timer-dialog";
 
 export default function Timer({
   cIdx,
@@ -205,22 +206,12 @@ export default function Timer({
 
       {/* Large Timer Dialog */}
       {showDialog && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center border-2 border-gray-300">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold mb-2">Player {cIdx + 1}</h2>
-              <div className="text-6xl font-bold font-mono text-gray-900 mb-4">
-                {formatTime(time)}
-              </div>
-              <div className="text-lg text-gray-600">
-                Remaining: {formatTime(remainingTime)}
-              </div>
-            </div>
-            <Button onClick={handleDialogClose} variant="primary" size="md">
-              Close Timer
-            </Button>
-          </div>
-        </div>
+        <TimerDialog
+          playerNumber={cIdx + 1}
+          time={time}
+          remainingTime={remainingTime}
+          onClose={handleDialogClose}
+        />
       )}
     </div>
   );

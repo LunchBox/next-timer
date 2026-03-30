@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Timer from "./timer";
 import Button from "./button";
 import TimerSettings from "./timer-settings";
@@ -54,15 +54,20 @@ export default function Home() {
   };
 
   const [resetSignal, setResetSignal] = useState(0);
-  const [maxMinutes, setMaxMinutes] = useState(() => loadMaxMinutes());
-  const [playerCount, setPlayerCount] = useState(() => loadPlayerCount());
-  const [allowMultiTimer, setAllowMultiTimer] = useState(() =>
-    loadAllowMultiTimer(),
-  );
+  const [maxMinutes, setMaxMinutes] = useState(15); // Default value for SSR
+  const [playerCount, setPlayerCount] = useState(10); // Default value for SSR
+  const [allowMultiTimer, setAllowMultiTimer] = useState(false); // Default value for SSR
   const [showSettings, setShowSettings] = useState(false);
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
     null,
   );
+
+  // Load settings from localStorage after component mounts (client-side only)
+  useEffect(() => {
+    setMaxMinutes(loadMaxMinutes());
+    setPlayerCount(loadPlayerCount());
+    setAllowMultiTimer(loadAllowMultiTimer());
+  }, []);
 
   const handleResetAll = () => {
     const firstConfirm = window.confirm(
