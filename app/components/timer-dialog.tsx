@@ -1,33 +1,30 @@
 import { useEffect } from "react";
 import Button from "./button";
+import { TimerComponentState } from "../../types/timer";
 
 interface TimerDialogProps {
   playerNumber: number;
-  time: number;
+  componentState: TimerComponentState;
   remainingTime: number;
   onClose: () => void;
   onTimeOut?: () => void;
   isReverseMode?: boolean;
-  showTimeOut?: boolean;
-  isNormalModeComplete?: boolean;
 }
 
 export default function TimerDialog({
   playerNumber,
-  time,
+  componentState,
   remainingTime,
   onClose,
   onTimeOut,
   isReverseMode = false,
-  showTimeOut = false,
-  isNormalModeComplete = false,
 }: TimerDialogProps) {
   // Check for timeout when time reaches 0 in reverse mode
   useEffect(() => {
-    if (isReverseMode && time <= 0 && onTimeOut) {
+    if (isReverseMode && componentState.time <= 0 && onTimeOut) {
       onTimeOut();
     }
-  }, [time, isReverseMode, onTimeOut]);
+  }, [componentState.time, isReverseMode, onTimeOut]);
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
@@ -40,12 +37,12 @@ export default function TimerDialog({
   return (
     <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center border-2 border-gray-300">
-        {showTimeOut ? (
+        {componentState.showTimeOut ? (
           <div className="mb-4">
             <h2 className="text-2xl font-bold mb-4 text-red-600">TIME OUT!</h2>
             <div className="text-4xl font-bold mb-2">Player {playerNumber}</div>
             <div className="text-lg text-gray-600 mb-4">
-              {isNormalModeComplete
+              {componentState.isNormalModeComplete
                 ? "Time limit reached"
                 : "Countdown completed"}
             </div>
@@ -56,7 +53,7 @@ export default function TimerDialog({
               Player {playerNumber}
             </h2>
             <div className="text-6xl font-bold font-mono tabular-nums text-gray-900 mb-4 min-w-[300px] text-center">
-              {formatTime(time)}
+              {formatTime(componentState.time)}
             </div>
             <div className="text-lg text-gray-600 font-mono tabular-nums">
               Remaining: {formatTime(remainingTime)}

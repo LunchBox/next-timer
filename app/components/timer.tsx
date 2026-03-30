@@ -308,13 +308,11 @@ export default function Timer(props: TimerProps) {
       {showDialog && (
         <TimerDialog
           playerNumber={cIdx + 1}
-          time={componentState.time}
+          componentState={componentState}
           remainingTime={remainingTime}
           onClose={handleDialogClose}
           onTimeOut={handleTimeOut}
           isReverseMode={reverseMode}
-          showTimeOut={componentState.showTimeOut}
-          isNormalModeComplete={componentState.isNormalModeComplete}
         />
       )}
     </div>
