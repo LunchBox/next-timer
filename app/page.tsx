@@ -53,6 +53,21 @@ export default function Home() {
     return false;
   };
 
+  // Load reverseMode from localStorage or default to false
+  const loadReverseMode = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("timer-reverse-mode");
+      if (saved) {
+        try {
+          return saved === "true";
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
   const [resetSignal, setResetSignal] = useState(0);
   const [maxMinutes, setMaxMinutes] = useState(15); // Default value for SSR
   const [playerCount, setPlayerCount] = useState(10); // Default value for SSR
@@ -68,6 +83,7 @@ export default function Home() {
     setMaxMinutes(loadMaxMinutes());
     setPlayerCount(loadPlayerCount());
     setAllowMultiTimer(loadAllowMultiTimer());
+    setReverseMode(loadReverseMode());
   }, []);
 
   const handleResetAll = () => {
