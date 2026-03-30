@@ -66,6 +66,11 @@ export default function Timer(props: TimerProps) {
   };
 
   const handlePause = () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to pause Player ${timer.id + 1}'s timer?`,
+    );
+    if (!confirmed) return;
+
     onPauseTimer(timer.id);
   };
 
