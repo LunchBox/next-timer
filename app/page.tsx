@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Timer from "./timer";
-import Button from "./button";
-import TimerSettings from "./timer-settings";
+import Timer from "./components/timer";
+import Button from "./components/button";
+import TimerSettings from "./components/timer-settings";
 
 export default function Home() {
   // Load maxMinutes from localStorage or default to 15
