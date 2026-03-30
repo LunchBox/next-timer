@@ -73,6 +73,19 @@ export default function Home() {
     }
   };
 
+  const handleToggleReverseModeWrapper = () => {
+    // Pause all running timers before toggling reverse mode
+    const pauseAllTimers = () => {
+      timerStores.forEach((store) => {
+        if (store.timer.isRunning) {
+          store.pauseTimer();
+        }
+      });
+    };
+
+    handleToggleReverseMode(pauseAllTimers);
+  };
+
   const handleStartTimer = (timerId: number) => {
     if (timerStores[timerId]) {
       timerStores[timerId].startTimer();
@@ -125,7 +138,7 @@ export default function Home() {
           </Button>
           {isClient && (
             <Button
-              onClick={handleToggleReverseMode}
+              onClick={handleToggleReverseModeWrapper}
               variant={settings.reverseMode ? "primary" : "ghost"}
               size="sm"
             >

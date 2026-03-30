@@ -8,7 +8,7 @@ export interface SettingStore {
   handleSetMaxMinutes: (minutes: number) => void;
   handleSetPlayerCount: (count: number) => void;
   handleSetAllowMultiTimer: (allow: boolean) => void;
-  handleToggleReverseMode: () => Promise<void>;
+  handleToggleReverseMode: (onBeforeToggle?: () => void) => Promise<void>;
 }
 
 // Helper function to load settings synchronously
@@ -166,7 +166,7 @@ export function useSettingStore(): SettingStore {
     saveAllowMultiTimer(allow);
   };
 
-  const handleToggleReverseMode = async () => {
+  const handleToggleReverseMode = async (onBeforeToggle?: () => void) => {
     const newReverseMode = !reverseMode;
     const action = newReverseMode ? "enable" : "disable";
 
@@ -180,6 +180,11 @@ export function useSettingStore(): SettingStore {
     ]);
 
     if (!confirmed) return;
+
+    // Call the callback to pause timers before toggling the mode
+    if (onBeforeToggle) {
+      onBeforeToggle();
+    }
 
     saveReverseMode(newReverseMode);
   };
