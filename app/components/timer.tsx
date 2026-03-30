@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import Button from "./button";
 import TimerDialog from "./timer-dialog";
-import { TimerProps, TimerState } from "../../types/timer";
-import { TIMER_CONFIG } from "../../config/timer";
+import {
+  TimerProps,
+  TimerStorageState,
+  TimerComponentState,
+} from "../../types/timer";
 
 export default function Timer(props: TimerProps) {
   const {
@@ -18,11 +21,13 @@ export default function Timer(props: TimerProps) {
   } = props;
   const storageKey = `timer-${cIdx}`;
   const MAX_TIME = maxMinutes * 60 * 1000; // Convert minutes to milliseconds
-  const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [showTimeOut, setShowTimeOut] = useState(false);
-  const [isNormalModeComplete, setIsNormalModeComplete] = useState(false);
+  const [componentState, setComponentState] = useState<TimerComponentState>({
+    time: 0,
+    isRunning: false,
+    isLoaded: false,
+    showTimeOut: false,
+    isNormalModeComplete: false,
+  });
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -45,34 +50,46 @@ export default function Timer(props: TimerProps) {
             pausedTimeRef.current = parsed.pausedTime || 0;
           }
         }
-        setTime(parsed.time || 0);
-        setIsRunning(parsed.isRunning || false);
+        setComponentState((prev) => ({
+          ...prev,
+          time: parsed.time || 0,
+          isRunning: parsed.isRunning || false,
+        }));
       } catch (e) {
         // Ignore invalid data
       }
     }
-    setIsLoaded(true);
+    setComponentState((prev) => ({ ...prev, isLoaded: true }));
   }, [storageKey]);
 
   // Save state to localStorage whenever it changes (only after initial load)
   useEffect(() => {
-    if (isLoaded) {
-      const stateToSave = {
-        time,
-        isRunning,
+    if (componentState.isLoaded) {
+      const stateToSave: TimerStorageState = {
+        time: componentState.time,
+        isRunning: componentState.isRunning,
         startTime: startTimeRef.current,
         pausedTime: pausedTimeRef.current,
         reverseMode,
       };
       localStorage.setItem(storageKey, JSON.stringify(stateToSave));
     }
-  }, [time, isRunning, storageKey, isLoaded, reverseMode]);
+  }, [
+    componentState.time,
+    componentState.isRunning,
+    storageKey,
+    componentState.isLoaded,
+    reverseMode,
+  ]);
 
   // Reset timer when resetSignal changes
   useEffect(() => {
     if (resetSignal && resetSignal > 0) {
-      setIsRunning(false);
-      setTime(0);
+      setComponentState((prev) => ({
+        ...prev,
+        isRunning: false,
+        time: 0,
+      }));
       startTimeRef.current = null;
       pausedTimeRef.current = 0;
     }
@@ -80,29 +97,29 @@ export default function Timer(props: TimerProps) {
 
   // Reset paused time when reverse mode changes to prevent calculation errors
   useEffect(() => {
-    if (!isRunning) {
+    if (!componentState.isRunning) {
       pausedTimeRef.current = 0;
     }
-  }, [reverseMode, isRunning]);
+  }, [reverseMode, componentState.isRunning]);
 
   // Animation frame for smooth updates
   const updateTimer = () => {
-    if (isRunning && startTimeRef.current) {
+    if (componentState.isRunning && startTimeRef.current) {
       const now = performance.now();
       const elapsed = now - startTimeRef.current + pausedTimeRef.current;
 
       let newTime: number;
-      if (reverseMode && time > 0) {
+      if (reverseMode && componentState.time > 0) {
         // Reverse mode: countdown from current time to 0
         // For countdown, we don't use pausedTimeRef to avoid calculation errors
         const countdownElapsed = now - startTimeRef.current;
-        newTime = Math.max(time - countdownElapsed, 0);
+        newTime = Math.max(componentState.time - countdownElapsed, 0);
       } else {
         // Normal mode: count up from 0 to MAX_TIME
         newTime = Math.min(elapsed, MAX_TIME);
       }
 
-      setTime(newTime);
+      setComponentState((prev) => ({ ...prev, time: newTime }));
 
       if (
         (reverseMode && newTime <= 0) ||
@@ -115,7 +132,7 @@ export default function Timer(props: TimerProps) {
         ) {
           handleTimeOut(!reverseMode && newTime >= MAX_TIME);
         }
-        setIsRunning(false);
+        setComponentState((prev) => ({ ...prev, isRunning: false }));
         startTimeRef.current = null;
         pausedTimeRef.current = 0;
       } else {
@@ -125,7 +142,7 @@ export default function Timer(props: TimerProps) {
   };
 
   useEffect(() => {
-    if (isRunning) {
+    if (componentState.isRunning) {
       if (!startTimeRef.current) {
         startTimeRef.current = performance.now();
       }
@@ -146,7 +163,7 @@ export default function Timer(props: TimerProps) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isRunning]);
+  }, [componentState.isRunning]);
 
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
@@ -157,14 +174,19 @@ export default function Timer(props: TimerProps) {
       .padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}`;
   };
 
-  const remainingTime = MAX_TIME - time;
+  const remainingTime = MAX_TIME - componentState.time;
   const progressPercentage =
-    reverseMode && time > 0 ? (time / MAX_TIME) * 100 : (time / MAX_TIME) * 100;
+    reverseMode && componentState.time > 0
+      ? (componentState.time / MAX_TIME) * 100
+      : (componentState.time / MAX_TIME) * 100;
 
   const handleStart = () => {
-    if (time < MAX_TIME || (reverseMode && time > 0)) {
+    if (
+      componentState.time < MAX_TIME ||
+      (reverseMode && componentState.time > 0)
+    ) {
       const confirmMessage =
-        time === 0
+        componentState.time === 0
           ? `Are you sure you want to start Player ${cIdx + 1}'s timer?`
           : reverseMode
             ? `Are you sure you want to count down Player ${cIdx + 1}'s timer?`
@@ -177,12 +199,12 @@ export default function Timer(props: TimerProps) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(cIdx);
       }
-      setIsRunning(true);
+      setComponentState((prev) => ({ ...prev, isRunning: true }));
     }
   };
 
   const handlePause = () => {
-    setIsRunning(false);
+    setComponentState((prev) => ({ ...prev, isRunning: false }));
   };
 
   const handleReset = () => {
@@ -201,26 +223,35 @@ export default function Timer(props: TimerProps) {
     );
     if (!thirdConfirm) return;
 
-    setIsRunning(false);
-    setTime(0);
+    setComponentState((prev) => ({
+      ...prev,
+      isRunning: false,
+      time: 0,
+    }));
   };
 
   const handleDialogClose = () => {
-    setIsRunning(false);
-    setShowTimeOut(false);
+    setComponentState((prev) => ({
+      ...prev,
+      isRunning: false,
+      showTimeOut: false,
+    }));
     onSetActiveTimerDialog(null);
   };
 
   const handleTimeOut = (isNormalModeComplete = false) => {
-    setShowTimeOut(true);
-    setIsNormalModeComplete(isNormalModeComplete);
-    setIsRunning(false);
+    setComponentState((prev) => ({
+      ...prev,
+      showTimeOut: true,
+      isNormalModeComplete,
+      isRunning: false,
+    }));
   };
 
   const showDialog =
     !allowMultiTimer &&
     activeTimerDialog === cIdx &&
-    (isRunning || showTimeOut);
+    (componentState.isRunning || componentState.showTimeOut);
 
   return (
     <div className="flex w-full items-center gap-4 p-2 border-b">
@@ -234,22 +265,29 @@ export default function Timer(props: TimerProps) {
         </div>
       </div>
       <div className="w-32 text-center font-mono text-sm">
-        <div className="text-xs text-gray-500">Used: {formatTime(time)}</div>
+        <div className="text-xs text-gray-500">
+          Used: {formatTime(componentState.time)}
+        </div>
         <div className="text-xs text-red-600 whitespace-nowrap">
           Remain: {formatTime(remainingTime)}
         </div>
       </div>
       <div className="flex gap-1">
-        {!isRunning ? (
+        {!componentState.isRunning ? (
           <Button
             onClick={handleStart}
             disabled={
-              (!reverseMode && time >= MAX_TIME) || (reverseMode && time === 0)
+              (!reverseMode && componentState.time >= MAX_TIME) ||
+              (reverseMode && componentState.time === 0)
             }
             variant="ghost"
             size="sm"
           >
-            {time === 0 ? "Start" : reverseMode ? "Count Down" : "Continue"}
+            {componentState.time === 0
+              ? "Start"
+              : reverseMode
+                ? "Count Down"
+                : "Continue"}
           </Button>
         ) : (
           <Button onClick={handlePause} variant="secondary" size="sm">
@@ -258,7 +296,7 @@ export default function Timer(props: TimerProps) {
         )}
         <Button
           onClick={handleReset}
-          disabled={time === 0}
+          disabled={componentState.time === 0}
           variant="ghost"
           size="sm"
         >
@@ -270,13 +308,13 @@ export default function Timer(props: TimerProps) {
       {showDialog && (
         <TimerDialog
           playerNumber={cIdx + 1}
-          time={time}
+          time={componentState.time}
           remainingTime={remainingTime}
           onClose={handleDialogClose}
           onTimeOut={handleTimeOut}
           isReverseMode={reverseMode}
-          showTimeOut={showTimeOut}
-          isNormalModeComplete={isNormalModeComplete}
+          showTimeOut={componentState.showTimeOut}
+          isNormalModeComplete={componentState.isNormalModeComplete}
         />
       )}
     </div>
