@@ -23,8 +23,8 @@ export default function Home() {
       reverseMode: settings.reverseMode,
       maxMinutes: settings.maxMinutes,
     }),
-    [],
-  ); // Empty deps - use initial values
+    [settings.reverseMode, settings.maxMinutes],
+  );
 
   const [showSettings, setShowSettings] = useState(false);
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
@@ -38,9 +38,8 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
-  // Use the timer stores hook to manage all timers - use stable settings to prevent recreation
-  const stablePlayerCount = useMemo(() => settings.playerCount, []); // Use initial value
-  const timerStores = useTimerStores(stablePlayerCount, stableTimerSettings);
+  // Use the timer stores hook to manage all timers
+  const timerStores = useTimerStores(settings.playerCount, stableTimerSettings);
 
   const handleGlobalPause = () => {
     const newGlobalPause = !globalPause;
@@ -75,23 +74,33 @@ export default function Home() {
   };
 
   const handleStartTimer = (timerId: number) => {
-    timerStores[timerId].startTimer();
+    if (timerStores[timerId]) {
+      timerStores[timerId].startTimer();
+    }
   };
 
   const handlePauseTimer = (timerId: number) => {
-    timerStores[timerId].pauseTimer();
+    if (timerStores[timerId]) {
+      timerStores[timerId].pauseTimer();
+    }
   };
 
   const handleResetTimer = (timerId: number) => {
-    timerStores[timerId].resetTimer();
+    if (timerStores[timerId]) {
+      timerStores[timerId].resetTimer();
+    }
   };
 
   const handleShowTimeout = (timerId: number, isNormalModeComplete = false) => {
-    timerStores[timerId].showTimeout(isNormalModeComplete);
+    if (timerStores[timerId]) {
+      timerStores[timerId].showTimeout(isNormalModeComplete);
+    }
   };
 
   const handleHideTimeout = (timerId: number) => {
-    timerStores[timerId].hideTimeout();
+    if (timerStores[timerId]) {
+      timerStores[timerId].hideTimeout();
+    }
   };
 
   return (
@@ -114,13 +123,15 @@ export default function Home() {
           <Button onClick={handleResetAll} variant="danger" size="sm">
             Reset All Timers
           </Button>
-          <Button
-            onClick={handleToggleReverseMode}
-            variant={settings.reverseMode ? "primary" : "ghost"}
-            size="sm"
-          >
-            {settings.reverseMode ? "Reverse Mode: ON" : "Reverse Mode: OFF"}
-          </Button>
+          {isClient && (
+            <Button
+              onClick={handleToggleReverseMode}
+              variant={settings.reverseMode ? "primary" : "ghost"}
+              size="sm"
+            >
+              {settings.reverseMode ? "Reverse Mode: ON" : "Reverse Mode: OFF"}
+            </Button>
+          )}
         </div>
 
         {/* Settings Form */}
@@ -137,10 +148,10 @@ export default function Home() {
 
         {/* Timers - only render on client to prevent hydration mismatch */}
         {isClient &&
-          Array.from({ length: settings.playerCount }, (_, i: number) => (
+          timerStores.map((store, i: number) => (
             <TimerComponent
-              key={timerStores[i].timer.id}
-              timer={timerStores[i].timer}
+              key={store.timer.id}
+              timer={store.timer}
               settings={settings}
               activeTimerDialog={activeTimerDialog}
               onSetActiveTimerDialog={setActiveTimerDialog}
