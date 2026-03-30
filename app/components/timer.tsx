@@ -87,17 +87,17 @@ export default function Timer(props: TimerProps) {
     (timer.isRunning || timer.showTimeOut);
 
   return (
-    <div className="flex w-full items-center gap-4 p-2 border-b">
-      <div className="w-16 text-sm font-medium">Player {timer.id + 1}</div>
-      <div className="flex-1 min-w-0">
-        <div className="w-36 bg-gray-200 h-3 mb-1 shadow-inner">
+    <div className="w-full grid grid-cols-[4rem_1fr_8rem_8rem] gap-4 items-center p-2 border-b">
+      <div className="text-sm font-medium">Player {timer.id + 1}</div>
+      <div className="min-w-4">
+        <div className="w-full bg-gray-200 h-3 mb-1 shadow-inner">
           <div
             className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 h-3 shadow-lg"
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>
       </div>
-      <div className="w-32 text-center font-mono text-sm">
+      <div className="text-right font-mono text-sm">
         <div className="text-xs text-gray-500">
           Used: {formatTime(timer.time)}
         </div>
@@ -105,7 +105,7 @@ export default function Timer(props: TimerProps) {
           Remain: {formatTime(remainingTime)}
         </div>
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-1 justify-end text-right">
         {!timer.isRunning ? (
           <Button
             onClick={handleStart}
