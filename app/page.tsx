@@ -1,106 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Timer from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { tripleConfirm } from "../utils/confirmations";
+import { TIMER_CONFIG } from "../config/timer";
 
 export default function Home() {
-  // Load maxMinutes from localStorage or default to 15
-  const loadMaxMinutes = () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("timer-max-minutes");
-      if (saved) {
-        try {
-          const parsed = parseInt(saved);
-          return isNaN(parsed) || parsed < 1 || parsed > 60 ? 15 : parsed;
-        } catch (e) {
-          return 15;
-        }
-      }
-    }
-    return 15;
-  };
-
-  // Load playerCount from localStorage or default to 10
-  const loadPlayerCount = () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("timer-player-count");
-      if (saved) {
-        try {
-          const parsed = parseInt(saved);
-          return isNaN(parsed) || parsed < 1 || parsed > 20 ? 10 : parsed;
-        } catch (e) {
-          return 10;
-        }
-      }
-    }
-    return 10;
-  };
-
-  // Load allowMultiTimer from localStorage or default to false
-  const loadAllowMultiTimer = () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("timer-allow-multi-timer");
-      if (saved) {
-        try {
-          return saved === "true";
-        } catch (e) {
-          return false;
-        }
-      }
-    }
-    return false;
-  };
-
-  // Load reverseMode from localStorage or default to false
-  const loadReverseMode = () => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("timer-reverse-mode");
-      if (saved) {
-        try {
-          return saved === "true";
-        } catch (e) {
-          return false;
-        }
-      }
-    }
-    return false;
-  };
-
   const [resetSignal, setResetSignal] = useState(0);
-  const [maxMinutes, setMaxMinutes] = useState(15); // Default value for SSR
-  const [playerCount, setPlayerCount] = useState(10); // Default value for SSR
-  const [allowMultiTimer, setAllowMultiTimer] = useState(false); // Default value for SSR
-  const [reverseMode, setReverseMode] = useState(false); // Default value for SSR
+  const [maxMinutes, saveMaxMinutes] = useLocalStorage(
+    TIMER_CONFIG.STORAGE_KEYS.MAX_MINUTES,
+    TIMER_CONFIG.DEFAULT_MAX_MINUTES,
+    (v) =>
+      typeof v === "number" && v >= 1 && v <= TIMER_CONFIG.MAX_MINUTES_LIMIT,
+  );
+  const [playerCount, savePlayerCount] = useLocalStorage(
+    TIMER_CONFIG.STORAGE_KEYS.PLAYER_COUNT,
+    TIMER_CONFIG.DEFAULT_PLAYER_COUNT,
+    (v) =>
+      typeof v === "number" && v >= 1 && v <= TIMER_CONFIG.MAX_PLAYER_COUNT,
+  );
+  const [allowMultiTimer, saveAllowMultiTimer] = useLocalStorage(
+    TIMER_CONFIG.STORAGE_KEYS.ALLOW_MULTI,
+    false,
+    (v) => typeof v === "boolean",
+  );
+  const [reverseMode, saveReverseMode] = useLocalStorage(
+    TIMER_CONFIG.STORAGE_KEYS.REVERSE_MODE,
+    false,
+    (v) => typeof v === "boolean",
+  );
   const [showSettings, setShowSettings] = useState(false);
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
     null,
   );
 
-  // Load settings from localStorage after component mounts (client-side only)
-  useEffect(() => {
-    setMaxMinutes(loadMaxMinutes());
-    setPlayerCount(loadPlayerCount());
-    setAllowMultiTimer(loadAllowMultiTimer());
-    setReverseMode(loadReverseMode());
-  }, []);
-
-  const handleResetAll = () => {
-    const firstConfirm = window.confirm(
+  const handleResetAll = async () => {
+    const confirmed = await tripleConfirm([
       "Are you sure you want to reset all timers?",
-    );
-    if (!firstConfirm) return;
-
-    const secondConfirm = window.confirm(
       "Confirm again: This will clear all player time records!",
-    );
-    if (!secondConfirm) return;
-
-    const thirdConfirm = window.confirm(
       "Final confirmation: Data cannot be recovered after reset, proceed?",
-    );
-    if (!thirdConfirm) return;
+    ]);
+
+    if (!confirmed) return;
 
     // Clear all timer data from localStorage
     for (let i = 0; i < playerCount; i++) {
@@ -112,42 +56,27 @@ export default function Home() {
   };
 
   const handleSetMaxMinutes = (minutes: number) => {
-    setMaxMinutes(minutes);
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("timer-max-minutes", minutes.toString());
-    }
+    saveMaxMinutes(minutes as any);
 
     // Clear all timer data and reset when changing max minutes
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < TIMER_CONFIG.MAX_PLAYER_COUNT; i++) {
       localStorage.removeItem(`timer-${i}`);
     }
     setResetSignal((prev) => prev + 1);
   };
 
   const handleSetPlayerCount = (count: number) => {
-    setPlayerCount(count);
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("timer-player-count", count.toString());
-    }
+    savePlayerCount(count as any);
 
     // Clear timer data for players beyond the new count
-    for (let i = count; i < 20; i++) {
+    for (let i = count; i < TIMER_CONFIG.MAX_PLAYER_COUNT; i++) {
       localStorage.removeItem(`timer-${i}`);
     }
     setResetSignal((prev) => prev + 1);
   };
 
   const handleSetAllowMultiTimer = (allow: boolean) => {
-    setAllowMultiTimer(allow);
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("timer-allow-multi-timer", allow.toString());
-    }
+    saveAllowMultiTimer(allow);
 
     // If disabling multi-timer, close any active dialog
     if (!allow) {
@@ -155,22 +84,19 @@ export default function Home() {
     }
   };
 
-  const handleToggleReverseMode = () => {
+  const handleToggleReverseMode = async () => {
     const newReverseMode = !reverseMode;
     const action = newReverseMode ? "enable" : "disable";
 
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} reverse mode? This will change how timers work.`,
-    );
+    const confirmed = await tripleConfirm([
+      `Are you sure you want to ${action} reverse mode?`,
+      "This will change how timers work.",
+      "Confirm to proceed.",
+    ]);
 
     if (!confirmed) return;
 
-    setReverseMode(newReverseMode);
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("timer-reverse-mode", newReverseMode.toString());
-    }
+    saveReverseMode(newReverseMode);
   };
 
   return (

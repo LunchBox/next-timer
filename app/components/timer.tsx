@@ -3,24 +3,19 @@
 import { useState, useEffect, useRef } from "react";
 import Button from "./button";
 import TimerDialog from "./timer-dialog";
+import { TimerProps, TimerState } from "../../types/timer";
+import { TIMER_CONFIG } from "../../config/timer";
 
-export default function Timer({
-  cIdx,
-  resetSignal,
-  maxMinutes,
-  allowMultiTimer,
-  reverseMode,
-  activeTimerDialog,
-  onSetActiveTimerDialog,
-}: {
-  cIdx: number;
-  resetSignal?: number;
-  maxMinutes: number;
-  allowMultiTimer: boolean;
-  reverseMode: boolean;
-  activeTimerDialog: number | null;
-  onSetActiveTimerDialog: (timerId: number | null) => void;
-}) {
+export default function Timer(props: TimerProps) {
+  const {
+    cIdx,
+    resetSignal,
+    maxMinutes,
+    allowMultiTimer,
+    reverseMode,
+    activeTimerDialog,
+    onSetActiveTimerDialog,
+  } = props;
   const storageKey = `timer-${cIdx}`;
   const MAX_TIME = maxMinutes * 60 * 1000; // Convert minutes to milliseconds
   const [time, setTime] = useState(0);
