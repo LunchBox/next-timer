@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const MAX_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
-
 export default function Timer({
   cIdx,
   resetSignal,
+  maxMinutes,
 }: {
   cIdx: number;
   resetSignal?: number;
+  maxMinutes: number;
 }) {
   const storageKey = `timer-${cIdx}`;
+  const MAX_TIME = maxMinutes * 60 * 1000; // Convert minutes to milliseconds
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
