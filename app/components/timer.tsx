@@ -38,12 +38,20 @@ export default function Timer({
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        if (parsed.isRunning && parsed.startTime) {
+          // Use the saved reverseMode for correct timing restoration
+          const savedReverseMode = parsed.reverseMode || false;
+          if (!savedReverseMode) {
+            // For normal mode, simulate start time to maintain correct timing after refresh
+            startTimeRef.current = performance.now() - parsed.time;
+            pausedTimeRef.current = 0;
+          } else {
+            startTimeRef.current = parsed.startTime;
+            pausedTimeRef.current = parsed.pausedTime || 0;
+          }
+        }
         setTime(parsed.time || 0);
         setIsRunning(parsed.isRunning || false);
-        if (parsed.isRunning && parsed.startTime) {
-          startTimeRef.current = parsed.startTime;
-          pausedTimeRef.current = parsed.pausedTime || 0;
-        }
       } catch (e) {
         // Ignore invalid data
       }
@@ -59,10 +67,11 @@ export default function Timer({
         isRunning,
         startTime: startTimeRef.current,
         pausedTime: pausedTimeRef.current,
+        reverseMode,
       };
       localStorage.setItem(storageKey, JSON.stringify(stateToSave));
     }
-  }, [time, isRunning, storageKey, isLoaded]);
+  }, [time, isRunning, storageKey, isLoaded, reverseMode]);
 
   // Reset timer when resetSignal changes
   useEffect(() => {
