@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import Button from "./button";
 import TimerDialog from "./timer-dialog";
-import { TimerProps, TimerStorageState, TimerState } from "../../types/timer";
-import { useTimerStore } from "../../hooks/useTimerStore";
+import { TimerProps } from "../../types/timer";
 import { tripleConfirm } from "../../utils/confirmations";
 
 /**
