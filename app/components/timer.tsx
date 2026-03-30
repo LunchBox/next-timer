@@ -84,6 +84,10 @@ export default function Timer(props: TimerProps) {
   };
 
   const handleDialogClose = () => {
+    // 當關閉 dialog 時，如果計時器正在運行，需要先暫停它
+    if (timer.isRunning) {
+      onPauseTimer(timer.id);
+    }
     onHideTimeout(timer.id);
     onSetActiveTimerDialog(null);
   };
