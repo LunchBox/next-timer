@@ -25,35 +25,45 @@ export function useTimerStore(
   const [storageState, setStorageState] =
     useLocalStorage<TimerStorageState | null>(storageKey, null);
 
-  const [timer, setTimer] = useState<TimerState>(initialTimer);
+  // Load initial state from localStorage synchronously
+  const getInitialTimerState = (): TimerState => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const storageState: TimerStorageState = JSON.parse(saved);
+        if (storageState.isRunning && storageState.startTime) {
+          const savedReverseMode = storageState.reverseMode || false;
+          if (!savedReverseMode) {
+            // For normal mode, simulate start time to maintain correct timing after refresh
+            startTimeRef.current = performance.now() - storageState.time;
+            pausedTimeRef.current = 0;
+            initialTimeRef.current = 0; // Normal mode always starts from 0
+          } else {
+            startTimeRef.current = storageState.startTime;
+            pausedTimeRef.current = storageState.pausedTime || 0;
+            initialTimeRef.current = storageState.time; // Reverse mode starts from saved time
+          }
+        } else {
+          // Timer is not running, set initial time for future starts
+          initialTimeRef.current = storageState.time || 0;
+        }
+        return {
+          ...initialTimer,
+          time: storageState.time || 0,
+          isRunning: storageState.isRunning || false,
+          isLoaded: true,
+        };
+      }
+    } catch (e) {
+      // Invalid data, use defaults
+    }
+    return { ...initialTimer, isLoaded: true };
+  };
+
+  const [timer, setTimer] = useState<TimerState>(getInitialTimerState);
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const initialTimeRef = useRef(0); // Store the time when timer started
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    if (storageState && !timer.isLoaded) {
-      if (storageState.isRunning && storageState.startTime) {
-        const savedReverseMode = storageState.reverseMode || false;
-        if (!savedReverseMode) {
-          // For normal mode, simulate start time to maintain correct timing after refresh
-          startTimeRef.current = performance.now() - storageState.time;
-          pausedTimeRef.current = 0;
-        } else {
-          startTimeRef.current = storageState.startTime;
-          pausedTimeRef.current = storageState.pausedTime || 0;
-        }
-      }
-      setTimer((prev) => ({
-        ...prev,
-        time: storageState.time || 0,
-        isRunning: storageState.isRunning || false,
-        isLoaded: true,
-      }));
-    } else if (!storageState && !timer.isLoaded) {
-      setTimer((prev) => ({ ...prev, isLoaded: true }));
-    }
-  }, [storageState]); // Removed timer.isLoaded to prevent infinite loop
 
   // Save to localStorage whenever state changes (only after initial load)
   useEffect(() => {
@@ -148,6 +158,8 @@ export function useTimerStore(
   };
 
   const resetTimer = () => {
+    // Clear localStorage when resetting
+    setStorageState(null);
     setTimer((prev) => ({
       ...prev,
       isRunning: false,
