@@ -5,6 +5,7 @@ import Button from "./button";
 import TimerDialog from "./timer-dialog";
 import { TimerProps, TimerStorageState, TimerState } from "../../types/timer";
 import { useTimerStore } from "../../hooks/useTimerStore";
+import { tripleConfirm } from "../../utils/confirmations";
 
 export default function Timer(props: TimerProps) {
   const {
@@ -66,21 +67,14 @@ export default function Timer(props: TimerProps) {
     storePauseTimer();
   };
 
-  const handleReset = () => {
-    const firstConfirm = window.confirm(
+  const handleReset = async () => {
+    const confirmed = await tripleConfirm([
       "Are you sure you want to reset this timer?",
-    );
-    if (!firstConfirm) return;
-
-    const secondConfirm = window.confirm(
       "Confirm again: This will clear all time records!",
-    );
-    if (!secondConfirm) return;
-
-    const thirdConfirm = window.confirm(
       "Final confirmation: Data cannot be recovered after reset, proceed?",
-    );
-    if (!thirdConfirm) return;
+    ]);
+
+    if (!confirmed) return;
 
     storeResetTimer();
   };

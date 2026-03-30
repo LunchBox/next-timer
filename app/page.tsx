@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
@@ -65,7 +65,7 @@ export default function Home() {
   );
 
   // Update timers when playerCount changes
-  useState(() => {
+  useEffect(() => {
     setTimers((prev) => {
       const newTimers = [...prev];
       while (newTimers.length < playerCount) {
@@ -80,20 +80,7 @@ export default function Home() {
       }
       return newTimers.slice(0, playerCount);
     });
-  });
-
-  // const onUpdateTimerState = (
-  //   timerId: number,
-  //   updates: Partial<TimerState>,
-  // ) => {
-  //   setTimers((prev) =>
-  //     prev.map((timer) =>
-  //       timer.id === timerId
-  //         ? { ...timer, state: { ...timer.state, ...updates } }
-  //         : timer,
-  //     ),
-  //   );
-  // };
+  }, [playerCount]);
 
   const handleGlobalPause = () => {
     const newGlobalPause = !globalPause;

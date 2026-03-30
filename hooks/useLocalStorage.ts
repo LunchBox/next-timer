@@ -26,7 +26,11 @@ export function useLocalStorage<T>(
   const saveValue = (newValue: T) => {
     setValue(newValue);
     if (typeof window !== "undefined") {
-      localStorage.setItem(key, JSON.stringify(newValue));
+      try {
+        localStorage.setItem(key, JSON.stringify(newValue));
+      } catch (error) {
+        console.warn(`Failed to save to localStorage for key "${key}":`, error);
+      }
     }
   };
 
