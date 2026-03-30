@@ -27,10 +27,10 @@ export default function TimerDialog({
       <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center border-2 border-gray-300">
         <div className="mb-4">
           <h2 className="text-xl font-semibold mb-2">Player {playerNumber}</h2>
-          <div className="text-6xl font-bold font-mono text-gray-900 mb-4">
+          <div className="text-6xl font-bold font-mono tabular-nums text-gray-900 mb-4 min-w-[300px] text-center">
             {formatTime(time)}
           </div>
-          <div className="text-lg text-gray-600">
+          <div className="text-lg text-gray-600 font-mono tabular-nums">
             Remaining: {formatTime(remainingTime)}
           </div>
         </div>
