@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
@@ -44,13 +44,16 @@ export default function Home() {
   );
   const [globalPause, setGlobalPause] = useState(false);
 
-  // Global settings state
-  const settings: SettingsState = {
-    maxMinutes,
-    playerCount,
-    allowMultiTimer,
-    reverseMode,
-  };
+  // Global settings state - memoized to prevent unnecessary re-renders
+  const settings: SettingsState = useMemo(
+    () => ({
+      maxMinutes,
+      playerCount,
+      allowMultiTimer,
+      reverseMode,
+    }),
+    [maxMinutes, playerCount, allowMultiTimer, reverseMode],
+  );
 
   // Initialize timers
   const [timers, setTimers] = useState<TimerState[]>(() =>

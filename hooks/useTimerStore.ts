@@ -52,7 +52,7 @@ export function useTimerStore(
     } else if (!storageState && !timer.isLoaded) {
       setTimer((prev) => ({ ...prev, isLoaded: true }));
     }
-  }, [storageState, timer.isLoaded]);
+  }, [storageState]); // Removed timer.isLoaded to prevent infinite loop
 
   // Save to localStorage whenever state changes (only after initial load)
   useEffect(() => {
@@ -66,7 +66,7 @@ export function useTimerStore(
       };
       setStorageState(stateToSave);
     }
-  }, [timer, settings.reverseMode, setStorageState]);
+  }, [timer, settings.reverseMode]); // Removed setStorageState as it should be stable
 
   // Reset paused time when reverse mode changes to prevent calculation errors
   useEffect(() => {

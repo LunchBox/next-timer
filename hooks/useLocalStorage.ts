@@ -21,7 +21,7 @@ export function useLocalStorage<T>(
         }
       }
     }
-  }, [key, validator]);
+  }, [key]); // Removed validator from dependencies to prevent infinite loops
 
   const saveValue = (newValue: T) => {
     setValue(newValue);
