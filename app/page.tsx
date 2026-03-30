@@ -38,10 +38,31 @@ export default function Home() {
     return 10;
   };
 
+  // Load allowMultiTimer from localStorage or default to false
+  const loadAllowMultiTimer = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("timer-allow-multi-timer");
+      if (saved) {
+        try {
+          return saved === "true";
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
   const [resetSignal, setResetSignal] = useState(0);
   const [maxMinutes, setMaxMinutes] = useState(() => loadMaxMinutes());
   const [playerCount, setPlayerCount] = useState(() => loadPlayerCount());
+  const [allowMultiTimer, setAllowMultiTimer] = useState(() =>
+    loadAllowMultiTimer(),
+  );
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
+    null,
+  );
 
   const handleResetAll = () => {
     const firstConfirm = window.confirm(
@@ -98,6 +119,20 @@ export default function Home() {
     setResetSignal((prev) => prev + 1);
   };
 
+  const handleSetAllowMultiTimer = (allow: boolean) => {
+    setAllowMultiTimer(allow);
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("timer-allow-multi-timer", allow.toString());
+    }
+
+    // If disabling multi-timer, close any active dialog
+    if (!allow) {
+      setActiveTimerDialog(null);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-8 px-16 bg-white dark:bg-black sm:items-start">
@@ -122,8 +157,10 @@ export default function Home() {
           <TimerSettings
             maxMinutes={maxMinutes}
             playerCount={playerCount}
+            allowMultiTimer={allowMultiTimer}
             onSetMaxMinutes={handleSetMaxMinutes}
             onSetPlayerCount={handleSetPlayerCount}
+            onSetAllowMultiTimer={handleSetAllowMultiTimer}
           />
         )}
 
@@ -134,6 +171,9 @@ export default function Home() {
             key={i}
             resetSignal={resetSignal}
             maxMinutes={maxMinutes}
+            allowMultiTimer={allowMultiTimer}
+            activeTimerDialog={activeTimerDialog}
+            onSetActiveTimerDialog={setActiveTimerDialog}
           />
         ))}
       </main>

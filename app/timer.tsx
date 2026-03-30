@@ -7,10 +7,16 @@ export default function Timer({
   cIdx,
   resetSignal,
   maxMinutes,
+  allowMultiTimer,
+  activeTimerDialog,
+  onSetActiveTimerDialog,
 }: {
   cIdx: number;
   resetSignal?: number;
   maxMinutes: number;
+  allowMultiTimer: boolean;
+  activeTimerDialog: number | null;
+  onSetActiveTimerDialog: (timerId: number | null) => void;
 }) {
   const storageKey = `timer-${cIdx}`;
   const MAX_TIME = maxMinutes * 60 * 1000; // Convert minutes to milliseconds
@@ -120,6 +126,10 @@ export default function Timer({
 
   const handleStart = () => {
     if (time < MAX_TIME) {
+      if (!allowMultiTimer) {
+        // If multi-timer is not allowed, show dialog for this timer
+        onSetActiveTimerDialog(cIdx);
+      }
       setIsRunning(true);
     }
   };
@@ -147,6 +157,14 @@ export default function Timer({
     setIsRunning(false);
     setTime(0);
   };
+
+  const handleDialogClose = () => {
+    setIsRunning(false);
+    onSetActiveTimerDialog(null);
+  };
+
+  const showDialog =
+    !allowMultiTimer && activeTimerDialog === cIdx && isRunning;
 
   return (
     <div className="flex w-full items-center gap-4 p-2 border-b">
@@ -184,6 +202,26 @@ export default function Timer({
           Reset
         </Button>
       </div>
+
+      {/* Large Timer Dialog */}
+      {showDialog && (
+        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 text-center border-2 border-gray-300">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold mb-2">Player {cIdx + 1}</h2>
+              <div className="text-6xl font-bold font-mono text-gray-900 mb-4">
+                {formatTime(time)}
+              </div>
+              <div className="text-lg text-gray-600">
+                Remaining: {formatTime(remainingTime)}
+              </div>
+            </div>
+            <Button onClick={handleDialogClose} variant="primary" size="md">
+              Close Timer
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,15 +4,19 @@ import Button from "./button";
 interface TimerSettingsProps {
   maxMinutes: number;
   playerCount: number;
+  allowMultiTimer: boolean;
   onSetMaxMinutes: (minutes: number) => void;
   onSetPlayerCount: (count: number) => void;
+  onSetAllowMultiTimer: (allow: boolean) => void;
 }
 
 export default function TimerSettings({
   maxMinutes,
   playerCount,
+  allowMultiTimer,
   onSetMaxMinutes,
   onSetPlayerCount,
+  onSetAllowMultiTimer,
 }: TimerSettingsProps) {
   const [inputMinutes, setInputMinutes] = useState(maxMinutes.toString());
   const [inputPlayerCount, setInputPlayerCount] = useState(
@@ -70,7 +74,10 @@ export default function TimerSettings({
       </form>
 
       {/* Player Count Setting */}
-      <form onSubmit={handleSetPlayerCount} className="flex items-center gap-4">
+      <form
+        onSubmit={handleSetPlayerCount}
+        className="flex items-center gap-4 mb-3"
+      >
         <label htmlFor="playerCount" className="text-sm font-medium">
           Player Count:
         </label>
@@ -90,9 +97,27 @@ export default function TimerSettings({
         </Button>
       </form>
 
+      {/* Multi Timer Setting */}
+      <div className="flex items-center gap-4">
+        <label htmlFor="allowMultiTimer" className="text-sm font-medium">
+          Allow Multiple Timers:
+        </label>
+        <input
+          id="allowMultiTimer"
+          type="checkbox"
+          checked={allowMultiTimer}
+          onChange={(e) => onSetAllowMultiTimer(e.target.checked)}
+          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+        />
+        <span className="text-sm text-gray-600">
+          {allowMultiTimer ? "Enabled" : "Disabled"} - When disabled, only one
+          timer can run at a time with a large display dialog
+        </span>
+      </div>
+
       <p className="text-xs text-gray-500 mt-2">
-        Current settings: {maxMinutes} minutes, {playerCount} players - Setting
-        new parameters will reset all timers
+        Current settings: {maxMinutes} minutes, {playerCount} players,
+        multi-timer: {allowMultiTimer ? "enabled" : "disabled"}
       </p>
     </div>
   );
