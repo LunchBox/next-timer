@@ -16,7 +16,7 @@ export interface TimerState {
   isNormalModeComplete: boolean;
 }
 
-export interface SettingsState {
+export interface SettingState {
   maxMinutes: number;
   playerCount: number;
   allowMultiTimer: boolean;
@@ -25,7 +25,7 @@ export interface SettingsState {
 
 export interface TimerProps {
   timer: TimerState;
-  settings: SettingsState;
+  settings: SettingState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
 }

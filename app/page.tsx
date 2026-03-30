@@ -6,7 +6,7 @@ import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
 import { useSettingStore } from "../hooks/useSettingStore";
 import { tripleConfirm } from "../utils/confirmations";
-import { TIMER_CONFIG } from "../config/timer";
+
 import { TimerState } from "../types/timer";
 import {
   createDefaultTimer,

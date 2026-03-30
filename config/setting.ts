@@ -1,4 +1,4 @@
-export const TIMER_CONFIG = {
+export const SETTING = {
   DEFAULT_MAX_MINUTES: 15,
   DEFAULT_PLAYER_COUNT: 10,
   MAX_MINUTES_LIMIT: 60,
@@ -11,4 +11,4 @@ export const TIMER_CONFIG = {
   },
 } as const;
 
-export type TimerConfig = typeof TIMER_CONFIG;
+export type GlobalSetting = typeof SETTING;
