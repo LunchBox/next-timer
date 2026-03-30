@@ -4,9 +4,24 @@ import { useState, useEffect, useRef } from "react";
 import Button from "./button";
 import TimerDialog from "./timer-dialog";
 import { TimerProps, TimerStorageState, TimerState } from "../../types/timer";
+import {
+  startTimer,
+  pauseTimer,
+  resetTimer,
+  setTimerTime,
+  showTimerTimeout,
+  hideTimerTimeout,
+  setTimerLoaded,
+} from "../models/timer";
 
 export default function Timer(props: TimerProps) {
-  const { timer, settings, activeTimerDialog, onSetActiveTimerDialog } = props;
+  const {
+    timer,
+    settings,
+    activeTimerDialog,
+    onSetActiveTimerDialog,
+    onUpdateTimers,
+  } = props;
   const storageKey = `timer-${timer.id}`;
   const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
   const startTimeRef = useRef<number | null>(null);
@@ -39,8 +54,8 @@ export default function Timer(props: TimerProps) {
         // Ignore invalid data
       }
     }
-    // onUpdateTimerState(timer.id, { isLoaded: true });
-    // }, [storageKey, timer.id, onUpdateTimerState]);
+    onUpdateTimers((timers) => setTimerLoaded(timers, timer.id));
+    // }, [storageKey, timer.id, onUpdateTimers]);
   }, [storageKey, timer.id]);
 
   // Save state to localStorage whenever it changes (only after initial load)
@@ -87,7 +102,7 @@ export default function Timer(props: TimerProps) {
         newTime = Math.min(elapsed, MAX_TIME);
       }
 
-      // onUpdateTimerState(timer.id, { time: newTime });
+      onUpdateTimers((timers) => setTimerTime(timers, timer.id, newTime));
 
       if (
         (settings.reverseMode && newTime <= 0) ||
@@ -100,7 +115,7 @@ export default function Timer(props: TimerProps) {
         ) {
           handleTimeOut(!settings.reverseMode && newTime >= MAX_TIME);
         }
-        // onUpdateTimerState(timer.id, { isRunning: false });
+        onUpdateTimers((timers) => pauseTimer(timers, timer.id));
         startTimeRef.current = null;
         pausedTimeRef.current = 0;
       } else {
@@ -165,12 +180,12 @@ export default function Timer(props: TimerProps) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(timer.id);
       }
-      // onUpdateTimerState(timer.id, { isRunning: true });
+      onUpdateTimers((timers) => startTimer(timers, timer.id));
     }
   };
 
   const handlePause = () => {
-    // onUpdateTimerState(timer.id, { isRunning: false });
+    onUpdateTimers((timers) => pauseTimer(timers, timer.id));
   };
 
   const handleReset = () => {
@@ -189,26 +204,18 @@ export default function Timer(props: TimerProps) {
     );
     if (!thirdConfirm) return;
 
-    // onUpdateTimerState(timer.id, {
-    //   isRunning: false,
-    //   time: 0,
-    // });
+    onUpdateTimers((timers) => resetTimer(timers, timer.id));
   };
 
   const handleDialogClose = () => {
-    // onUpdateTimerState(timer.id, {
-    //   isRunning: false,
-    //   showTimeOut: false,
-    // });
+    onUpdateTimers((timers) => hideTimerTimeout(timers, timer.id));
     onSetActiveTimerDialog(null);
   };
 
   const handleTimeOut = (isNormalModeComplete = false) => {
-    // onUpdateTimerState(timer.id, {
-    //   showTimeOut: true,
-    //   isNormalModeComplete,
-    //   isRunning: false,
-    // });
+    onUpdateTimers((timers) =>
+      showTimerTimeout(timers, timer.id, isNormalModeComplete),
+    );
   };
 
   const showDialog =

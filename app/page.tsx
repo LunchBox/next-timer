@@ -8,6 +8,13 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 import { tripleConfirm } from "../utils/confirmations";
 import { TIMER_CONFIG } from "../config/timer";
 import { TimerState, SettingsState } from "../types/timer";
+import {
+  createDefaultTimer,
+  resetTimer,
+  setTimerLoaded,
+  startTimer,
+  pauseTimer,
+} from "./models/timer";
 
 export default function Home() {
   const [maxMinutes, saveMaxMinutes] = useLocalStorage(
@@ -116,19 +123,15 @@ export default function Home() {
       localStorage.removeItem(`timer-${i}`);
     }
 
-    // Reset all timers directly
-    setTimers((prev) =>
-      prev.map((timer) => ({
-        ...timer,
-        state: {
-          time: 0,
-          isRunning: false,
-          isLoaded: true,
-          showTimeOut: false,
-          isNormalModeComplete: false,
-        },
-      })),
-    );
+    // Reset all timers using model functions
+    setTimers((prev) => {
+      let updatedTimers = [...prev];
+      for (let i = 0; i < prev.length; i++) {
+        updatedTimers = resetTimer(updatedTimers, i);
+        updatedTimers = setTimerLoaded(updatedTimers, i);
+      }
+      return updatedTimers;
+    });
   };
 
   const handleSetMaxMinutes = (minutes: number) => {
@@ -139,19 +142,15 @@ export default function Home() {
       localStorage.removeItem(`timer-${i}`);
     }
 
-    // Reset all timers
-    setTimers((prev) =>
-      prev.map((timer) => ({
-        ...timer,
-        state: {
-          time: 0,
-          isRunning: false,
-          isLoaded: true,
-          showTimeOut: false,
-          isNormalModeComplete: false,
-        },
-      })),
-    );
+    // Reset all timers using model functions
+    setTimers((prev) => {
+      let updatedTimers = [...prev];
+      for (let i = 0; i < prev.length; i++) {
+        updatedTimers = resetTimer(updatedTimers, i);
+        updatedTimers = setTimerLoaded(updatedTimers, i);
+      }
+      return updatedTimers;
+    });
   };
 
   const handleSetPlayerCount = (count: number) => {
@@ -162,19 +161,15 @@ export default function Home() {
       localStorage.removeItem(`timer-${i}`);
     }
 
-    // Reset all timers
-    setTimers((prev) =>
-      prev.map((timer) => ({
-        ...timer,
-        state: {
-          time: 0,
-          isRunning: false,
-          isLoaded: true,
-          showTimeOut: false,
-          isNormalModeComplete: false,
-        },
-      })),
-    );
+    // Reset all timers using model functions
+    setTimers((prev) => {
+      let updatedTimers = [...prev];
+      for (let i = 0; i < prev.length; i++) {
+        updatedTimers = resetTimer(updatedTimers, i);
+        updatedTimers = setTimerLoaded(updatedTimers, i);
+      }
+      return updatedTimers;
+    });
   };
 
   const handleSetAllowMultiTimer = (allow: boolean) => {
@@ -250,6 +245,7 @@ export default function Home() {
             settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
+            onUpdateTimers={setTimers}
           />
         ))}
       </main>

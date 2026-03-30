@@ -28,5 +28,5 @@ export interface TimerProps {
   settings: SettingsState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
-  // onUpdateTimerState: (timerId: number, updates: Partial<TimerState>) => void;
+  onUpdateTimers: (updateFn: (timers: TimerState[]) => TimerState[]) => void;
 }
