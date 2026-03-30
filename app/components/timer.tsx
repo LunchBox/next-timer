@@ -26,6 +26,7 @@ export default function Timer({
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [showTimeOut, setShowTimeOut] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -153,11 +154,13 @@ export default function Timer({
     reverseMode && time > 0 ? (time / MAX_TIME) * 100 : (time / MAX_TIME) * 100;
 
   const handleStart = () => {
-    if (time < MAX_TIME) {
+    if (time < MAX_TIME || (reverseMode && time > 0)) {
       const confirmMessage =
         time === 0
           ? `Are you sure you want to start Player ${cIdx + 1}'s timer?`
-          : `Are you sure you want to continue Player ${cIdx + 1}'s timer?`;
+          : reverseMode
+            ? `Are you sure you want to count down Player ${cIdx + 1}'s timer?`
+            : `Are you sure you want to continue Player ${cIdx + 1}'s timer?`;
 
       const confirmed = window.confirm(confirmMessage);
       if (!confirmed) return;
@@ -196,16 +199,19 @@ export default function Timer({
 
   const handleDialogClose = () => {
     setIsRunning(false);
+    setShowTimeOut(false);
     onSetActiveTimerDialog(null);
   };
 
   const handleTimeOut = () => {
-    alert(`Time out for Player ${cIdx + 1}!`);
-    handleDialogClose();
+    setShowTimeOut(true);
+    setIsRunning(false);
   };
 
   const showDialog =
-    !allowMultiTimer && activeTimerDialog === cIdx && isRunning;
+    !allowMultiTimer &&
+    activeTimerDialog === cIdx &&
+    (isRunning || showTimeOut);
 
   return (
     <div className="flex w-full items-center gap-4 p-2 border-b">
@@ -228,7 +234,9 @@ export default function Timer({
         {!isRunning ? (
           <Button
             onClick={handleStart}
-            disabled={time >= MAX_TIME || (reverseMode && time === 0)}
+            disabled={
+              (!reverseMode && time >= MAX_TIME) || (reverseMode && time === 0)
+            }
             variant="ghost"
             size="sm"
           >
@@ -258,6 +266,7 @@ export default function Timer({
           onClose={handleDialogClose}
           onTimeOut={handleTimeOut}
           isReverseMode={reverseMode}
+          showTimeOut={showTimeOut}
         />
       )}
     </div>
