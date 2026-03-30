@@ -27,8 +27,10 @@ export default function TimerSettings({
   const handleSetMaxMinutes = (e: React.FormEvent) => {
     e.preventDefault();
     const minutes = parseInt(inputMinutes);
-    if (isNaN(minutes) || minutes <= 0 || minutes > 60) {
-      alert("Please enter a valid number of minutes (1-60)");
+    if (isNaN(minutes) || minutes <= 0 || minutes > SETTING.MAX_MINUTES_LIMIT) {
+      alert(
+        `Please enter a valid number of minutes (1-${SETTING.MAX_MINUTES_LIMIT})`,
+      );
       return;
     }
 
@@ -70,7 +72,9 @@ export default function TimerSettings({
           className="px-3 py-1 border rounded text-sm w-20"
           placeholder="15"
         />
-        <span className="text-sm text-gray-600">minutes (1-60)</span>
+        <span className="text-sm text-gray-600">
+          minutes (1-{SETTING.MAX_MINUTES_LIMIT})
+        </span>
         <Button type="submit" variant="primary" size="sm">
           Set Minutes
         </Button>
