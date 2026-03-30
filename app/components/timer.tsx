@@ -9,24 +9,17 @@ import { tripleConfirm } from "../../utils/confirmations";
 
 export default function Timer(props: TimerProps) {
   const {
-    timer: initialTimer,
+    timer,
     settings,
     activeTimerDialog,
     onSetActiveTimerDialog,
+    onStartTimer,
+    onPauseTimer,
+    onResetTimer,
+    onShowTimeout,
+    onHideTimeout,
   } = props;
   const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
-
-  const {
-    timer,
-    startTimer: storeStartTimer,
-    pauseTimer: storePauseTimer,
-    resetTimer: storeResetTimer,
-    showTimeout,
-    hideTimeout,
-  } = useTimerStore(initialTimer, {
-    reverseMode: settings.reverseMode,
-    maxMinutes: settings.maxMinutes,
-  });
 
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
@@ -59,12 +52,12 @@ export default function Timer(props: TimerProps) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(timer.id);
       }
-      storeStartTimer();
+      onStartTimer(timer.id);
     }
   };
 
   const handlePause = () => {
-    storePauseTimer();
+    onPauseTimer(timer.id);
   };
 
   const handleReset = async () => {
@@ -76,16 +69,16 @@ export default function Timer(props: TimerProps) {
 
     if (!confirmed) return;
 
-    storeResetTimer();
+    onResetTimer(timer.id);
   };
 
   const handleDialogClose = () => {
-    hideTimeout();
+    onHideTimeout(timer.id);
     onSetActiveTimerDialog(null);
   };
 
   const handleTimeOut = (isNormalModeComplete = false) => {
-    showTimeout(isNormalModeComplete);
+    onShowTimeout(timer.id, isNormalModeComplete);
   };
 
   const showDialog =

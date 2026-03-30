@@ -67,6 +67,26 @@ export default function Home() {
     }
   };
 
+  const handleStartTimer = (timerId: number) => {
+    timerStores[timerId].startTimer();
+  };
+
+  const handlePauseTimer = (timerId: number) => {
+    timerStores[timerId].pauseTimer();
+  };
+
+  const handleResetTimer = (timerId: number) => {
+    timerStores[timerId].resetTimer();
+  };
+
+  const handleShowTimeout = (timerId: number, isNormalModeComplete = false) => {
+    timerStores[timerId].showTimeout(isNormalModeComplete);
+  };
+
+  const handleHideTimeout = (timerId: number) => {
+    timerStores[timerId].hideTimeout();
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-8 px-16 bg-white dark:bg-black sm:items-start">
@@ -117,6 +137,11 @@ export default function Home() {
               settings={settings}
               activeTimerDialog={activeTimerDialog}
               onSetActiveTimerDialog={setActiveTimerDialog}
+              onStartTimer={handleStartTimer}
+              onPauseTimer={handlePauseTimer}
+              onResetTimer={handleResetTimer}
+              onShowTimeout={handleShowTimeout}
+              onHideTimeout={handleHideTimeout}
             />
           ))}
       </main>

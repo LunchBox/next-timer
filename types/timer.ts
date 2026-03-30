@@ -28,4 +28,9 @@ export interface TimerProps {
   settings: SettingState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
+  onStartTimer: (timerId: number) => void;
+  onPauseTimer: (timerId: number) => void;
+  onResetTimer: (timerId: number) => void;
+  onShowTimeout: (timerId: number, isNormalModeComplete?: boolean) => void;
+  onHideTimeout: (timerId: number) => void;
 }

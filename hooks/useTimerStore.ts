@@ -28,6 +28,7 @@ export function useTimerStore(
   const [timer, setTimer] = useState<TimerState>(initialTimer);
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
+  const initialTimeRef = useRef(0); // Store the time when timer started
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -74,6 +75,65 @@ export function useTimerStore(
       pausedTimeRef.current = 0;
     }
   }, [settings.reverseMode, timer.isRunning]);
+
+  // Timer update logic - runs when timer is running
+  useEffect(() => {
+    let animationFrame: number;
+
+    const updateTimer = () => {
+      if (timer.isRunning && startTimeRef.current !== null) {
+        const now = performance.now();
+        const elapsed = now - startTimeRef.current - pausedTimeRef.current;
+
+        let newTime: number;
+        if (settings.reverseMode) {
+          // Reverse mode: count down from initial time
+          newTime = Math.max(0, initialTimeRef.current - elapsed);
+          if (newTime <= 0) {
+            // Timer reached zero
+            showTimeout(true);
+            return;
+          }
+        } else {
+          // Normal mode: count up from initial time
+          newTime = initialTimeRef.current + elapsed;
+          if (newTime >= MAX_TIME) {
+            // Timer reached max time
+            showTimeout(false);
+            return;
+          }
+        }
+
+        // Update timer state
+        setTimer((prev) => ({ ...prev, time: newTime }));
+      }
+
+      if (timer.isRunning) {
+        animationFrame = requestAnimationFrame(updateTimer);
+      }
+    };
+
+    if (timer.isRunning) {
+      if (startTimeRef.current === null) {
+        // Starting timer for the first time
+        startTimeRef.current = performance.now();
+        pausedTimeRef.current = 0;
+        initialTimeRef.current = timer.time; // Capture the starting time
+      }
+      animationFrame = requestAnimationFrame(updateTimer);
+    } else {
+      // Timer paused
+      if (startTimeRef.current !== null) {
+        pausedTimeRef.current += performance.now() - startTimeRef.current;
+      }
+    }
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [timer.isRunning, settings.reverseMode, MAX_TIME]);
 
   const updateTimer = (newTime: number) => {
     setTimer((prev) => ({ ...prev, time: newTime }));
