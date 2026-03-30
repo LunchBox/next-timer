@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Timer from "./timer";
+import Button from "./button";
 
 export default function Home() {
   // Load maxMinutes from localStorage or default to 15
@@ -98,12 +99,9 @@ export default function Home() {
               placeholder="15"
             />
             <span className="text-sm text-gray-600">分鐘 (1-60)</span>
-            <button
-              type="submit"
-              className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm font-medium"
-            >
+            <Button type="submit" variant="primary" size="sm">
               設置並重置
-            </button>
+            </Button>
           </form>
           <p className="text-xs text-gray-500 mt-2">
             當前設置: {maxMinutes} 分鐘 - 設置新時間將重置所有計時器
@@ -112,12 +110,9 @@ export default function Home() {
 
         {/* Reset All Button */}
         <div className="w-full mb-4">
-          <button
-            onClick={handleResetAll}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-medium"
-          >
+          <Button onClick={handleResetAll} variant="danger" size="md">
             重置所有計時器
-          </button>
+          </Button>
         </div>
 
         {/* Timers */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Button from "./button";
 
 export default function Timer({
   cIdx,
@@ -162,27 +163,22 @@ export default function Timer({
       </div>
       <div className="flex gap-1">
         {!isRunning ? (
-          <button
+          <Button
             onClick={handleStart}
             disabled={time >= MAX_TIME}
-            className="px-2 py-1 text-xs border cursor-pointer hover:bg-gray-700 hover:text-gray-100 disabled:opacity-50"
+            variant="ghost"
+            size="sm"
           >
             {time === 0 ? "開始" : "繼續"}
-          </button>
+          </Button>
         ) : (
-          <button
-            onClick={handlePause}
-            className="px-2 py-1 cursor-pointer text-xs border hover:bg-gray-700 hover:text-gray-100"
-          >
+          <Button onClick={handlePause} variant="secondary" size="sm">
             暫停
-          </button>
+          </Button>
         )}
-        <button
-          onClick={handleReset}
-          className="px-2 py-1 cursor-pointer text-xs border hover:bg-gray-700 hover:text-gray-100"
-        >
+        <Button onClick={handleReset} variant="ghost" size="sm">
           重置
-        </button>
+        </Button>
       </div>
     </div>
   );
