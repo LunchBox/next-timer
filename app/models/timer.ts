@@ -1,15 +1,15 @@
 import { TimerState } from "@/types/timer";
 
-export function createDefaultTimer(): TimerState {
-  return {
-    id: 0,
-    time: 0,
-    isRunning: false,
-    isLoaded: false,
-    showTimeOut: false,
-    isNormalModeComplete: false,
-  };
-}
+// export function createDefaultTimer(): TimerState {
+//   return {
+//     id: 0,
+//     time: 0,
+//     isRunning: false,
+//     isLoaded: false,
+//     showTimeOut: false,
+//     isNormalModeComplete: false,
+//   };
+// }
 
 export function updateTimerState(
   timer: TimerState,

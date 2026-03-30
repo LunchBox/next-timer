@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
 import { useSettingStore } from "../hooks/useSettingStore";
+import { useTimerStores } from "../hooks/useTimerStore";
 import { tripleConfirm } from "../utils/confirmations";
-
-import { TimerState } from "../types/timer";
-import {
-  createDefaultTimer,
-  resetTimer,
-  setTimerLoaded,
-  updateTimerInArray,
-} from "./models/timer";
 
 export default function Home() {
   const {
@@ -30,47 +23,20 @@ export default function Home() {
   );
   const [globalPause, setGlobalPause] = useState(false);
 
-  // Initialize timers
-  const [timers, setTimers] = useState<TimerState[]>(() =>
-    Array.from({ length: settings.playerCount }, (_, i) => ({
-      id: i,
-      time: 0,
-      isRunning: false,
-      isLoaded: false,
-      showTimeOut: false,
-      isNormalModeComplete: false,
-    })),
-  );
-
-  // Update timers when playerCount changes
-  useEffect(() => {
-    setTimers((prev) => {
-      const newTimers = [...prev];
-      while (newTimers.length < settings.playerCount) {
-        newTimers.push({
-          id: newTimers.length,
-          time: 0,
-          isRunning: false,
-          isLoaded: false,
-          showTimeOut: false,
-          isNormalModeComplete: false,
-        });
-      }
-      return newTimers.slice(0, settings.playerCount);
-    });
-  }, [settings.playerCount]);
+  // Use the timer stores hook to manage all timers
+  const timerStores = useTimerStores(settings.playerCount, {
+    reverseMode: settings.reverseMode,
+    maxMinutes: settings.maxMinutes,
+  });
 
   const handleGlobalPause = () => {
     const newGlobalPause = !globalPause;
     setGlobalPause(newGlobalPause);
 
     // Pause or resume all timers based on global pause state
-    setTimers((prev) =>
-      prev.map((timer) => ({
-        ...timer,
-        isRunning: newGlobalPause ? false : timer.isRunning,
-      })),
-    );
+    if (newGlobalPause) {
+      timerStores.forEach((store) => store.pauseTimer());
+    }
   };
 
   const handleResetAll = async () => {
@@ -82,19 +48,8 @@ export default function Home() {
 
     if (!confirmed) return;
 
-    // Clear all timer data from localStorage
-    for (let i = 0; i < settings.playerCount; i++) {
-      localStorage.removeItem(`timer-${i}`);
-    }
-
-    // Reset all timers using model functions
-    setTimers((prev) =>
-      prev.map(
-        (timer) =>
-          updateTimerInArray([timer], timer.id, resetTimer)[0] &&
-          updateTimerInArray([timer], timer.id, setTimerLoaded)[0],
-      ),
-    );
+    // Reset all timers using the store methods
+    timerStores.forEach((store) => store.resetTimer());
   };
 
   const handleSetAllowMultiTimerWrapper = (allow: boolean) => {
@@ -150,8 +105,8 @@ export default function Home() {
         {/* Timers */}
         {Array.from({ length: settings.playerCount }, (_, i: number) => (
           <TimerComponent
-            key={timers[i].id}
-            timer={timers[i]}
+            key={timerStores[i].timer.id}
+            timer={timerStores[i].timer}
             settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}

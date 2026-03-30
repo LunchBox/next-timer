@@ -130,3 +130,23 @@ export function useTimerStore(
     setLoaded,
   };
 }
+
+// Hook for managing multiple timers
+export function useTimerStores(
+  count: number,
+  settings: { reverseMode: boolean; maxMinutes: number },
+): TimerStore[] {
+  return Array.from({ length: count }, (_, i) =>
+    useTimerStore(
+      {
+        id: i,
+        time: 0,
+        isRunning: false,
+        isLoaded: false,
+        showTimeOut: false,
+        isNormalModeComplete: false,
+      },
+      settings,
+    ),
+  );
+}
