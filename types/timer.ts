@@ -14,13 +14,18 @@ export interface TimerState {
   isNormalModeComplete: boolean;
 }
 
+export interface TimerSettingsState {
+  maxMinutes: number;
+  playerCount: number;
+  allowMultiTimer: boolean;
+  reverseMode: boolean;
+}
+
 export interface TimerProps {
   cIdx: number;
   timerState: TimerState;
   resetSignal?: number;
-  maxMinutes: number;
-  allowMultiTimer: boolean;
-  reverseMode: boolean;
+  settings: TimerSettingsState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
   onUpdateTimerState: (cIdx: number, updates: Partial<TimerState>) => void;

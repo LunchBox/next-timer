@@ -10,15 +10,13 @@ export default function Timer(props: TimerProps) {
     cIdx,
     timerState,
     resetSignal,
-    maxMinutes,
-    allowMultiTimer,
-    reverseMode,
+    settings,
     activeTimerDialog,
     onSetActiveTimerDialog,
     onUpdateTimerState,
   } = props;
   const storageKey = `timer-${cIdx}`;
-  const MAX_TIME = maxMinutes * 60 * 1000; // Convert minutes to milliseconds
+  const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
@@ -60,7 +58,7 @@ export default function Timer(props: TimerProps) {
         isRunning: timerState.isRunning,
         startTime: startTimeRef.current,
         pausedTime: pausedTimeRef.current,
-        reverseMode,
+        reverseMode: settings.reverseMode,
       };
       localStorage.setItem(storageKey, JSON.stringify(stateToSave));
     }
@@ -69,7 +67,7 @@ export default function Timer(props: TimerProps) {
     timerState.isRunning,
     storageKey,
     timerState.isLoaded,
-    reverseMode,
+    settings.reverseMode,
   ]);
 
   // Reset timer when resetSignal changes
@@ -89,7 +87,7 @@ export default function Timer(props: TimerProps) {
     if (!timerState.isRunning) {
       pausedTimeRef.current = 0;
     }
-  }, [reverseMode, timerState.isRunning]);
+  }, [settings.reverseMode, timerState.isRunning]);
 
   // Animation frame for smooth updates
   const updateTimer = () => {
@@ -98,7 +96,7 @@ export default function Timer(props: TimerProps) {
       const elapsed = now - startTimeRef.current + pausedTimeRef.current;
 
       let newTime: number;
-      if (reverseMode && timerState.time > 0) {
+      if (settings.reverseMode && timerState.time > 0) {
         // Reverse mode: countdown from current time to 0
         // For countdown, we don't use pausedTimeRef to avoid calculation errors
         const countdownElapsed = now - startTimeRef.current;
@@ -111,15 +109,15 @@ export default function Timer(props: TimerProps) {
       onUpdateTimerState(cIdx, { time: newTime });
 
       if (
-        (reverseMode && newTime <= 0) ||
-        (!reverseMode && newTime >= MAX_TIME)
+        (settings.reverseMode && newTime <= 0) ||
+        (!settings.reverseMode && newTime >= MAX_TIME)
       ) {
         // Show timeout for both normal mode completion and reverse mode countdown
         if (
-          (reverseMode && newTime <= 0) ||
-          (!reverseMode && newTime >= MAX_TIME)
+          (settings.reverseMode && newTime <= 0) ||
+          (!settings.reverseMode && newTime >= MAX_TIME)
         ) {
-          handleTimeOut(!reverseMode && newTime >= MAX_TIME);
+          handleTimeOut(!settings.reverseMode && newTime >= MAX_TIME);
         }
         onUpdateTimerState(cIdx, { isRunning: false });
         startTimeRef.current = null;
@@ -165,23 +163,26 @@ export default function Timer(props: TimerProps) {
 
   const remainingTime = MAX_TIME - timerState.time;
   const progressPercentage =
-    reverseMode && timerState.time > 0
+    settings.reverseMode && timerState.time > 0
       ? (timerState.time / MAX_TIME) * 100
       : (timerState.time / MAX_TIME) * 100;
 
   const handleStart = () => {
-    if (timerState.time < MAX_TIME || (reverseMode && timerState.time > 0)) {
+    if (
+      timerState.time < MAX_TIME ||
+      (settings.reverseMode && timerState.time > 0)
+    ) {
       const confirmMessage =
         timerState.time === 0
           ? `Are you sure you want to start Player ${cIdx + 1}'s timer?`
-          : reverseMode
+          : settings.reverseMode
             ? `Are you sure you want to count down Player ${cIdx + 1}'s timer?`
             : `Are you sure you want to continue Player ${cIdx + 1}'s timer?`;
 
       const confirmed = window.confirm(confirmMessage);
       if (!confirmed) return;
 
-      if (!allowMultiTimer) {
+      if (!settings.allowMultiTimer) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(cIdx);
       }
@@ -232,7 +233,7 @@ export default function Timer(props: TimerProps) {
   };
 
   const showDialog =
-    !allowMultiTimer &&
+    !settings.allowMultiTimer &&
     activeTimerDialog === cIdx &&
     (timerState.isRunning || timerState.showTimeOut);
 
@@ -260,15 +261,15 @@ export default function Timer(props: TimerProps) {
           <Button
             onClick={handleStart}
             disabled={
-              (!reverseMode && timerState.time >= MAX_TIME) ||
-              (reverseMode && timerState.time === 0)
+              (!settings.reverseMode && timerState.time >= MAX_TIME) ||
+              (settings.reverseMode && timerState.time === 0)
             }
             variant="ghost"
             size="sm"
           >
             {timerState.time === 0
               ? "Start"
-              : reverseMode
+              : settings.reverseMode
                 ? "Count Down"
                 : "Continue"}
           </Button>
@@ -295,7 +296,7 @@ export default function Timer(props: TimerProps) {
           remainingTime={remainingTime}
           onClose={handleDialogClose}
           onTimeOut={handleTimeOut}
-          isReverseMode={reverseMode}
+          isReverseMode={settings.reverseMode}
         />
       )}
     </div>

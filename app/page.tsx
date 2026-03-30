@@ -7,7 +7,7 @@ import TimerSettings from "./components/timer-settings";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { tripleConfirm } from "../utils/confirmations";
 import { TIMER_CONFIG } from "../config/timer";
-import { TimerState } from "../types/timer";
+import { TimerState, TimerSettingsState } from "../types/timer";
 
 export default function Home() {
   const [resetSignal, setResetSignal] = useState(0);
@@ -38,6 +38,14 @@ export default function Home() {
     null,
   );
   const [globalPause, setGlobalPause] = useState(false);
+
+  // Global settings state
+  const settings: TimerSettingsState = {
+    maxMinutes,
+    playerCount,
+    allowMultiTimer,
+    reverseMode,
+  };
 
   // Initialize timer states
   const [timers, setTimers] = useState<TimerState[]>(() =>
@@ -198,9 +206,7 @@ export default function Home() {
             cIdx={i}
             timerState={timers[i]}
             resetSignal={resetSignal}
-            maxMinutes={maxMinutes}
-            allowMultiTimer={allowMultiTimer}
-            reverseMode={reverseMode}
+            settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
             onUpdateTimerState={onUpdateTimerState}
