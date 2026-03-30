@@ -72,6 +72,13 @@ export default function Timer({
     }
   }, [resetSignal]);
 
+  // Reset paused time when reverse mode changes to prevent calculation errors
+  useEffect(() => {
+    if (!isRunning) {
+      pausedTimeRef.current = 0;
+    }
+  }, [reverseMode, isRunning]);
+
   // Animation frame for smooth updates
   const updateTimer = () => {
     if (isRunning && startTimeRef.current) {
@@ -81,7 +88,9 @@ export default function Timer({
       let newTime: number;
       if (reverseMode && time > 0) {
         // Reverse mode: countdown from current time to 0
-        newTime = Math.max(time - elapsed, 0);
+        // For countdown, we don't use pausedTimeRef to avoid calculation errors
+        const countdownElapsed = now - startTimeRef.current;
+        newTime = Math.max(time - countdownElapsed, 0);
       } else {
         // Normal mode: count up from 0 to MAX_TIME
         newTime = Math.min(elapsed, MAX_TIME);
@@ -93,6 +102,10 @@ export default function Timer({
         (reverseMode && newTime <= 0) ||
         (!reverseMode && newTime >= MAX_TIME)
       ) {
+        // Show timeout alert for reverse mode countdown
+        if (reverseMode && newTime <= 0) {
+          handleTimeOut();
+        }
         setIsRunning(false);
         startTimeRef.current = null;
         pausedTimeRef.current = 0;
@@ -186,6 +199,11 @@ export default function Timer({
     onSetActiveTimerDialog(null);
   };
 
+  const handleTimeOut = () => {
+    alert(`Time out for Player ${cIdx + 1}!`);
+    handleDialogClose();
+  };
+
   const showDialog =
     !allowMultiTimer && activeTimerDialog === cIdx && isRunning;
 
@@ -210,7 +228,7 @@ export default function Timer({
         {!isRunning ? (
           <Button
             onClick={handleStart}
-            disabled={time >= MAX_TIME}
+            disabled={time >= MAX_TIME || (reverseMode && time === 0)}
             variant="ghost"
             size="sm"
           >
@@ -221,7 +239,12 @@ export default function Timer({
             Pause
           </Button>
         )}
-        <Button onClick={handleReset} variant="ghost" size="sm">
+        <Button
+          onClick={handleReset}
+          disabled={time === 0}
+          variant="ghost"
+          size="sm"
+        >
           Reset
         </Button>
       </div>
@@ -233,6 +256,8 @@ export default function Timer({
           time={time}
           remainingTime={remainingTime}
           onClose={handleDialogClose}
+          onTimeOut={handleTimeOut}
+          isReverseMode={reverseMode}
         />
       )}
     </div>

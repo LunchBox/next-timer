@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Button from "./button";
 
 interface TimerDialogProps {
@@ -5,6 +6,8 @@ interface TimerDialogProps {
   time: number;
   remainingTime: number;
   onClose: () => void;
+  onTimeOut?: () => void;
+  isReverseMode?: boolean;
 }
 
 export default function TimerDialog({
@@ -12,7 +15,15 @@ export default function TimerDialog({
   time,
   remainingTime,
   onClose,
+  onTimeOut,
+  isReverseMode = false,
 }: TimerDialogProps) {
+  // Check for timeout when time reaches 0 in reverse mode
+  useEffect(() => {
+    if (isReverseMode && time <= 0 && onTimeOut) {
+      onTimeOut();
+    }
+  }, [time, isReverseMode, onTimeOut]);
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
