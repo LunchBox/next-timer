@@ -4,89 +4,36 @@ import { useState, useEffect, useRef } from "react";
 import Button from "./button";
 import TimerDialog from "./timer-dialog";
 import { TimerProps, TimerStorageState, TimerState } from "../../types/timer";
-import {
-  startTimer,
-  pauseTimer,
-  resetTimer,
-  setTimerTime,
-  showTimerTimeout,
-  hideTimerTimeout,
-  setTimerLoaded,
-} from "../models/timer";
+import { useTimerStore } from "../../hooks/useTimerStore";
 
 export default function Timer(props: TimerProps) {
   const {
-    timer,
+    timer: initialTimer,
     settings,
     activeTimerDialog,
     onSetActiveTimerDialog,
     onUpdateTimers,
   } = props;
-  const storageKey = `timer-${timer.id}`;
   const MAX_TIME = settings.maxMinutes * 60 * 1000; // Convert minutes to milliseconds
-  const startTimeRef = useRef<number | null>(null);
-  const pausedTimeRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Load state from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.isRunning && parsed.startTime) {
-          // Use the saved reverseMode for correct timing restoration
-          const savedReverseMode = parsed.reverseMode || false;
-          if (!savedReverseMode) {
-            // For normal mode, simulate start time to maintain correct timing after refresh
-            startTimeRef.current = performance.now() - parsed.time;
-            pausedTimeRef.current = 0;
-          } else {
-            startTimeRef.current = parsed.startTime;
-            pausedTimeRef.current = parsed.pausedTime || 0;
-          }
-        }
-        // onUpdateTimerState(timer.id, {
-        //   time: parsed.time || 0,
-        //   isRunning: parsed.isRunning || false,
-        // });
-      } catch (e) {
-        // Ignore invalid data
-      }
-    }
-    onUpdateTimers((timers) => setTimerLoaded(timers, timer.id));
-    // }, [storageKey, timer.id, onUpdateTimers]);
-  }, [storageKey, timer.id]);
-
-  // Save state to localStorage whenever it changes (only after initial load)
-  useEffect(() => {
-    if (timer.isLoaded) {
-      const stateToSave: TimerStorageState = {
-        time: timer.time,
-        isRunning: timer.isRunning,
-        startTime: startTimeRef.current,
-        pausedTime: pausedTimeRef.current,
-        reverseMode: settings.reverseMode,
-      };
-      localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-    }
-  }, [
-    timer.time,
-    timer.isRunning,
-    storageKey,
-    timer.isLoaded,
-    settings.reverseMode,
-  ]);
-
-  // Reset paused time when reverse mode changes to prevent calculation errors
-  useEffect(() => {
-    if (!timer.isRunning) {
-      pausedTimeRef.current = 0;
-    }
-  }, [settings.reverseMode, timer.isRunning]);
+  const {
+    timer,
+    startTimeRef,
+    pausedTimeRef,
+    updateTimer: storeUpdateTimer,
+    startTimer: storeStartTimer,
+    pauseTimer: storePauseTimer,
+    resetTimer: storeResetTimer,
+    showTimeout,
+    hideTimeout,
+  } = useTimerStore(initialTimer, {
+    reverseMode: settings.reverseMode,
+    maxMinutes: settings.maxMinutes,
+  });
 
   // Animation frame for smooth updates
-  const updateTimer = () => {
+  const updateTimerAnimation = () => {
     if (timer.isRunning && startTimeRef.current) {
       const now = performance.now();
       const elapsed = now - startTimeRef.current + pausedTimeRef.current;
@@ -102,7 +49,7 @@ export default function Timer(props: TimerProps) {
         newTime = Math.min(elapsed, MAX_TIME);
       }
 
-      onUpdateTimers((timers) => setTimerTime(timers, timer.id, newTime));
+      storeUpdateTimer(newTime);
 
       if (
         (settings.reverseMode && newTime <= 0) ||
@@ -113,13 +60,13 @@ export default function Timer(props: TimerProps) {
           (settings.reverseMode && newTime <= 0) ||
           (!settings.reverseMode && newTime >= MAX_TIME)
         ) {
-          handleTimeOut(!settings.reverseMode && newTime >= MAX_TIME);
+          showTimeout(!settings.reverseMode && newTime >= MAX_TIME);
         }
-        onUpdateTimers((timers) => pauseTimer(timers, timer.id));
+        storePauseTimer();
         startTimeRef.current = null;
         pausedTimeRef.current = 0;
       } else {
-        animationFrameRef.current = requestAnimationFrame(updateTimer);
+        animationFrameRef.current = requestAnimationFrame(updateTimerAnimation);
       }
     }
   };
@@ -129,7 +76,7 @@ export default function Timer(props: TimerProps) {
       if (!startTimeRef.current) {
         startTimeRef.current = performance.now();
       }
-      animationFrameRef.current = requestAnimationFrame(updateTimer);
+      animationFrameRef.current = requestAnimationFrame(updateTimerAnimation);
     } else {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -146,7 +93,6 @@ export default function Timer(props: TimerProps) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-    // }, [timer.state.isRunning, timer.id, onUpdateTimerState]);
   }, [timer.isRunning, timer.id]);
 
   const formatTime = (milliseconds: number) => {
@@ -180,12 +126,12 @@ export default function Timer(props: TimerProps) {
         // If multi-timer is not allowed, show dialog for this timer
         onSetActiveTimerDialog(timer.id);
       }
-      onUpdateTimers((timers) => startTimer(timers, timer.id));
+      storeStartTimer();
     }
   };
 
   const handlePause = () => {
-    onUpdateTimers((timers) => pauseTimer(timers, timer.id));
+    storePauseTimer();
   };
 
   const handleReset = () => {
@@ -204,18 +150,16 @@ export default function Timer(props: TimerProps) {
     );
     if (!thirdConfirm) return;
 
-    onUpdateTimers((timers) => resetTimer(timers, timer.id));
+    storeResetTimer();
   };
 
   const handleDialogClose = () => {
-    onUpdateTimers((timers) => hideTimerTimeout(timers, timer.id));
+    hideTimeout();
     onSetActiveTimerDialog(null);
   };
 
   const handleTimeOut = (isNormalModeComplete = false) => {
-    onUpdateTimers((timers) =>
-      showTimerTimeout(timers, timer.id, isNormalModeComplete),
-    );
+    showTimeout(isNormalModeComplete);
   };
 
   const showDialog =
