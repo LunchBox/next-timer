@@ -9,7 +9,6 @@ export default function Timer(props: TimerProps) {
   const {
     cIdx,
     timerState,
-    resetSignal,
     settings,
     activeTimerDialog,
     onSetActiveTimerDialog,
@@ -69,18 +68,6 @@ export default function Timer(props: TimerProps) {
     timerState.isLoaded,
     settings.reverseMode,
   ]);
-
-  // Reset timer when resetSignal changes
-  useEffect(() => {
-    if (resetSignal && resetSignal > 0) {
-      onUpdateTimerState(cIdx, {
-        isRunning: false,
-        time: 0,
-      });
-      startTimeRef.current = null;
-      pausedTimeRef.current = 0;
-    }
-  }, [resetSignal, cIdx, onUpdateTimerState]);
 
   // Reset paused time when reverse mode changes to prevent calculation errors
   useEffect(() => {

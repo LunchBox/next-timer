@@ -10,7 +10,6 @@ import { TIMER_CONFIG } from "../config/timer";
 import { TimerState, TimerSettingsState } from "../types/timer";
 
 export default function Home() {
-  const [resetSignal, setResetSignal] = useState(0);
   const [maxMinutes, saveMaxMinutes] = useLocalStorage(
     TIMER_CONFIG.STORAGE_KEYS.MAX_MINUTES,
     TIMER_CONFIG.DEFAULT_MAX_MINUTES,
@@ -110,8 +109,16 @@ export default function Home() {
       localStorage.removeItem(`timer-${i}`);
     }
 
-    // Trigger reset signal to all timers
-    setResetSignal((prev) => prev + 1);
+    // Reset all timers directly
+    setTimers((prev) =>
+      prev.map(() => ({
+        time: 0,
+        isRunning: false,
+        isLoaded: true,
+        showTimeOut: false,
+        isNormalModeComplete: false,
+      })),
+    );
   };
 
   const handleSetMaxMinutes = (minutes: number) => {
@@ -121,7 +128,17 @@ export default function Home() {
     for (let i = 0; i < TIMER_CONFIG.MAX_PLAYER_COUNT; i++) {
       localStorage.removeItem(`timer-${i}`);
     }
-    setResetSignal((prev) => prev + 1);
+
+    // Reset all timers
+    setTimers((prev) =>
+      prev.map(() => ({
+        time: 0,
+        isRunning: false,
+        isLoaded: true,
+        showTimeOut: false,
+        isNormalModeComplete: false,
+      })),
+    );
   };
 
   const handleSetPlayerCount = (count: number) => {
@@ -131,7 +148,17 @@ export default function Home() {
     for (let i = count; i < TIMER_CONFIG.MAX_PLAYER_COUNT; i++) {
       localStorage.removeItem(`timer-${i}`);
     }
-    setResetSignal((prev) => prev + 1);
+
+    // Reset all timers
+    setTimers((prev) =>
+      prev.map(() => ({
+        time: 0,
+        isRunning: false,
+        isLoaded: true,
+        showTimeOut: false,
+        isNormalModeComplete: false,
+      })),
+    );
   };
 
   const handleSetAllowMultiTimer = (allow: boolean) => {
@@ -205,7 +232,6 @@ export default function Home() {
             key={i}
             cIdx={i}
             timerState={timers[i]}
-            resetSignal={resetSignal}
             settings={settings}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}

@@ -24,7 +24,6 @@ export interface TimerSettingsState {
 export interface TimerProps {
   cIdx: number;
   timerState: TimerState;
-  resetSignal?: number;
   settings: TimerSettingsState;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
