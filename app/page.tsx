@@ -57,6 +57,7 @@ export default function Home() {
   const [maxMinutes, setMaxMinutes] = useState(15); // Default value for SSR
   const [playerCount, setPlayerCount] = useState(10); // Default value for SSR
   const [allowMultiTimer, setAllowMultiTimer] = useState(false); // Default value for SSR
+  const [reverseMode, setReverseMode] = useState(false); // Default value for SSR
   const [showSettings, setShowSettings] = useState(false);
   const [activeTimerDialog, setActiveTimerDialog] = useState<number | null>(
     null,
@@ -138,6 +139,24 @@ export default function Home() {
     }
   };
 
+  const handleToggleReverseMode = () => {
+    const newReverseMode = !reverseMode;
+    const action = newReverseMode ? "enable" : "disable";
+
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} reverse mode? This will change how timers work.`,
+    );
+
+    if (!confirmed) return;
+
+    setReverseMode(newReverseMode);
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("timer-reverse-mode", newReverseMode.toString());
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-8 px-16 bg-white dark:bg-black sm:items-start">
@@ -154,6 +173,13 @@ export default function Home() {
           </Button>
           <Button onClick={handleResetAll} variant="danger" size="sm">
             Reset All Timers
+          </Button>
+          <Button
+            onClick={handleToggleReverseMode}
+            variant={reverseMode ? "primary" : "ghost"}
+            size="sm"
+          >
+            {reverseMode ? "Reverse Mode: ON" : "Reverse Mode: OFF"}
           </Button>
         </div>
 
@@ -177,6 +203,7 @@ export default function Home() {
             resetSignal={resetSignal}
             maxMinutes={maxMinutes}
             allowMultiTimer={allowMultiTimer}
+            reverseMode={reverseMode}
             activeTimerDialog={activeTimerDialog}
             onSetActiveTimerDialog={setActiveTimerDialog}
           />

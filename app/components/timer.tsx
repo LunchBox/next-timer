@@ -9,6 +9,7 @@ export default function Timer({
   resetSignal,
   maxMinutes,
   allowMultiTimer,
+  reverseMode,
   activeTimerDialog,
   onSetActiveTimerDialog,
 }: {
@@ -16,6 +17,7 @@ export default function Timer({
   resetSignal?: number;
   maxMinutes: number;
   allowMultiTimer: boolean;
+  reverseMode: boolean;
   activeTimerDialog: number | null;
   onSetActiveTimerDialog: (timerId: number | null) => void;
 }) {
@@ -75,11 +77,22 @@ export default function Timer({
     if (isRunning && startTimeRef.current) {
       const now = performance.now();
       const elapsed = now - startTimeRef.current + pausedTimeRef.current;
-      const newTime = Math.min(elapsed, MAX_TIME);
+
+      let newTime: number;
+      if (reverseMode && time > 0) {
+        // Reverse mode: countdown from current time to 0
+        newTime = Math.max(time - elapsed, 0);
+      } else {
+        // Normal mode: count up from 0 to MAX_TIME
+        newTime = Math.min(elapsed, MAX_TIME);
+      }
 
       setTime(newTime);
 
-      if (newTime >= MAX_TIME) {
+      if (
+        (reverseMode && newTime <= 0) ||
+        (!reverseMode && newTime >= MAX_TIME)
+      ) {
         setIsRunning(false);
         startTimeRef.current = null;
         pausedTimeRef.current = 0;
@@ -123,7 +136,8 @@ export default function Timer({
   };
 
   const remainingTime = MAX_TIME - time;
-  const progressPercentage = (time / MAX_TIME) * 100;
+  const progressPercentage =
+    reverseMode && time > 0 ? (time / MAX_TIME) * 100 : (time / MAX_TIME) * 100;
 
   const handleStart = () => {
     if (time < MAX_TIME) {
@@ -200,7 +214,7 @@ export default function Timer({
             variant="ghost"
             size="sm"
           >
-            {time === 0 ? "Start" : "Continue"}
+            {time === 0 ? "Start" : reverseMode ? "Count Down" : "Continue"}
           </Button>
         ) : (
           <Button onClick={handlePause} variant="secondary" size="sm">
