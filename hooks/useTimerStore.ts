@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { TimerState, TimerStorageState } from "../types/timer";
+import { SETTING } from "../config/setting";
 
 /**
  * 計時器 Store 接口
@@ -349,7 +350,7 @@ export function useTimerStores(
   settings: { reverseMode: boolean; maxMinutes: number },
 ): TimerStore[] {
   // 始終創建最大數量的計時器來保持 hooks 調用次數一致
-  const MAX_TIMERS = 20; // 與 SETTING.MAX_PLAYER_COUNT 保持一致
+  const MAX_TIMERS = SETTING.MAX_PLAYER_COUNT; // 使用配置的最大玩家數量
 
   const allStores = Array.from({ length: MAX_TIMERS }, (_, i) =>
     useTimerStore(

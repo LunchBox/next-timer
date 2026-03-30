@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Button from "./button";
+import { SETTING } from "../../config/setting";
 
 interface TimerSettingsProps {
   maxMinutes: number;
@@ -37,8 +38,10 @@ export default function TimerSettings({
   const handleSetPlayerCount = (e: React.FormEvent) => {
     e.preventDefault();
     const count = parseInt(inputPlayerCount);
-    if (isNaN(count) || count < 1 || count > 20) {
-      alert("Please enter a valid number of players (1-20)");
+    if (isNaN(count) || count < 1 || count > SETTING.MAX_PLAYER_COUNT) {
+      alert(
+        `Please enter a valid number of players (1-${SETTING.MAX_PLAYER_COUNT})`,
+      );
       return;
     }
 
@@ -85,13 +88,15 @@ export default function TimerSettings({
           id="playerCount"
           type="number"
           min="1"
-          max="20"
+          max={SETTING.MAX_PLAYER_COUNT.toString()}
           value={inputPlayerCount}
           onChange={(e) => setInputPlayerCount(e.target.value)}
           className="px-3 py-1 border rounded text-sm w-20"
           placeholder="10"
         />
-        <span className="text-sm text-gray-600">players (1-20)</span>
+        <span className="text-sm text-gray-600">
+          players (1-{SETTING.MAX_PLAYER_COUNT})
+        </span>
         <Button type="submit" variant="primary" size="sm">
           Set Players
         </Button>

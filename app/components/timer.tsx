@@ -100,7 +100,7 @@ export default function Timer(props: TimerProps) {
     (timer.isRunning || timer.showTimeOut);
 
   return (
-    <div className="w-full grid grid-cols-[4rem_1fr_8rem_10rem] gap-4 items-center p-2 border-b">
+    <div className="w-full grid grid-cols-[4rem_1fr_8rem_9rem] gap-4 items-center p-2 border-b">
       <div className="text-sm font-medium">Player {timer.id + 1}</div>
       <div className="min-w-4">
         <div className="w-full bg-gray-200 h-3 mb-1 shadow-inner">
