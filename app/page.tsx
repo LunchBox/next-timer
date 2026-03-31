@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import TimerComponent from "./components/timer";
 import Button from "./components/button";
 import TimerSettings from "./components/timer-settings";
+import TimerDialog from "./components/timer-dialog";
 import { useSettingStore } from "../hooks/useSettingStore";
 import { useTimerStores } from "../hooks/useTimerStore";
 import { tripleConfirm } from "../utils/confirmations";
@@ -221,6 +222,33 @@ export default function Home() {
             />
           ))}
       </main>
+
+      {/* Large Timer Dialog - only show when multi-timer is disabled */}
+      {isClient &&
+        !settings.allowMultiTimer &&
+        activeTimerDialog !== null &&
+        timerStores[activeTimerDialog] && (
+          <TimerDialog
+            playerNumber={activeTimerDialog + 1}
+            componentState={timerStores[activeTimerDialog].timer}
+            remainingTime={
+              settings.maxMinutes * 60 * 1000 -
+              timerStores[activeTimerDialog].timer.time
+            }
+            onClose={() => {
+              // 當關閉 dialog 時，如果計時器正在運行，需要先暫停它
+              if (timerStores[activeTimerDialog].timer.isRunning) {
+                handlePauseTimer(activeTimerDialog);
+              }
+              handleHideTimeout(activeTimerDialog);
+              setActiveTimerDialog(null);
+            }}
+            onTimeOut={() => {
+              handleShowTimeout(activeTimerDialog, settings.reverseMode);
+            }}
+            isReverseMode={settings.reverseMode}
+          />
+        )}
     </div>
   );
 }

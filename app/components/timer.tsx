@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "./button";
-import TimerDialog from "./timer-dialog";
 import { TimerProps } from "../../types/timer";
 import { tripleConfirm } from "../../utils/confirmations";
 
@@ -86,24 +85,6 @@ export default function Timer(props: TimerProps) {
     onResetTimer(timer.id);
   };
 
-  const handleDialogClose = () => {
-    // 當關閉 dialog 時，如果計時器正在運行，需要先暫停它
-    if (timer.isRunning) {
-      onPauseTimer(timer.id);
-    }
-    onHideTimeout(timer.id);
-    onSetActiveTimerDialog(null);
-  };
-
-  const handleTimeOut = (isNormalModeComplete = false) => {
-    onShowTimeout(timer.id, isNormalModeComplete);
-  };
-
-  const showDialog =
-    !settings.allowMultiTimer &&
-    activeTimerDialog === timer.id &&
-    (timer.isRunning || timer.showTimeOut);
-
   return (
     <div className="w-full grid grid-cols-[4rem_1fr_8rem_9rem] gap-4 items-center p-2 border-b">
       <div className="text-sm font-medium">Player {timer.id + 1}</div>
@@ -154,18 +135,6 @@ export default function Timer(props: TimerProps) {
           Reset
         </Button>
       </div>
-
-      {/* Large Timer Dialog */}
-      {showDialog && (
-        <TimerDialog
-          playerNumber={timer.id + 1}
-          componentState={timer}
-          remainingTime={remainingTime}
-          onClose={handleDialogClose}
-          onTimeOut={handleTimeOut}
-          isReverseMode={settings.reverseMode}
-        />
-      )}
     </div>
   );
 }
